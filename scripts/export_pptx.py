@@ -1,38 +1,32 @@
 #!/usr/bin/env python3
 """
-PPTX & PDF Export Script — 16:9 Full-Screen Viewport Screenshot (v6.0)
-=======================================================================
-Pixel-perfect export: opens the HTML in headless Chromium at 1920×1080
-(FHD 16:9 — the standard full-screen presentation resolution), waits for
-Tailwind CSS + all web fonts to fully load, then captures each
-<section class="slide"> as a retina-quality (3840×2160) viewport screenshot.
+PPTX & PDF Export Script — True Browser Full-Screen Export (v7.0)
+==================================================================
+Goal: exported PPTX/PDF pages must be VISUALLY INDISTINGUISHABLE
+from opening the HTML in a real browser and pressing F11 (full-screen).
 
-Headless Chromium has NO browser chrome (no title bar, no tabs, no address
-bar, no OS window decorations). The 1920×1080 viewport IS the entire visible
-area — exactly what a user sees when they press F11 in a real browser at
-1920×1080. The exported file is pixel-identical to the browser full-screen view.
+Strategy:
+  1. Launch headless Chromium with GPU-enabling flags so backdrop-filter
+     (glassmorphism blur), gradients, and shadows render identically to
+     a real browser.
+  2. Force sRGB color profile for accurate color rendering.
+  3. Wait for the FULL CSS transition (0.6s) + buffer before capturing.
+  4. Screenshot at 1920×1080 @2x retina (3840×2160 PNG) — this is the
+     raw full-screen view, embedded as-is into PPTX/PDF.
+
+Headless vs real browser:
+  - NO browser chrome in headless mode (no title bar, tabs, address bar,
+    OS window decorations). The 1920×1080 viewport IS the full canvas.
+  - GPU flags (--use-gl=angle, --use-angle=swiftshader) ensure
+    backdrop-filter / glassmorphism / complex gradients render correctly.
+  - --force-color-profile=srgb ensures colors match the real browser.
 
 Usage:
     python export_pptx.py <input_html> <output_file>
-
-    Output format is detected from extension:
-        .pptx  → PowerPoint
-        .pdf   → PDF (multi-page, one screenshot per page)
+    .pptx  → PowerPoint,  .pdf  → PDF
 
 Dependencies:
     playwright, python-pptx, Pillow
-
-Architecture:
-    1. Launch headless Chromium (no browser chrome — effectively full-screen)
-    2. Set viewport to 1920×1080 (16:9 FHD) @2x device scale → 3840×2160 PNG
-    3. Wait for Tailwind CDN to finish compiling CSS
-    4. Wait for all web fonts (Google Fonts) to load via document.fonts.ready
-    5. Cycle through slides via JS (sets .active class, others .above/.below)
-    6. Wait for CSS transition (0.6s) to settle
-    7. Screenshot the viewport (full_page=False) — this captures the exact
-       1920×1080 visible area, which IS the full-screen browser view
-    8. PPTX: embed each PNG as full-slide background (16:9, 13.333" × 7.5")
-    9. PDF:  stitch screenshots into multi-page PDF at 150dpi
 """
 
 import sys
@@ -63,35 +57,47 @@ def capture_slides(html_path: str) -> list[bytes]:
     file_url = abs_html.as_uri()
 
     with sync_playwright() as p:
-        # Headless Chromium has NO browser chrome — no title bar, tabs,
-        # address bar, or OS window decorations. The viewport IS the
-        # full visible area, exactly like F11 full-screen in a real browser.
-        browser = p.chromium.launch(headless=True)
+        # ── GPU / rendering flags for headless Chromium ──
+        # Without GPU, backdrop-filter (glassmorphism blur) renders as a
+        # flat background — the #1 reason exported PPTX looks "washed out"
+        # compared to a real browser. These flags enable software GPU
+        # (SwiftShader via ANGLE) so every CSS effect matches the browser.
+        chromium_args = [
+            "--headless=new",               # new headless = closer to real browser
+            "--use-gl=angle",              # ANGLE backend (Windows-native OpenGL→D3D)
+            "--use-angle=swiftshader",     # software GPU (no hardware GPU needed)
+            "--force-color-profile=srgb",  # sRGB = standard Web color space
+            "--enable-gpu-rasterization",  # GPU-accelerated 2D canvas
+            "--enable-font-antialiasing",  # smooth font rendering
+            "--disable-low-res-tiling",    # full-resolution compositing
+            "--num-raster-threads=4",      # parallel rasterization
+            "--force-device-scale-factor=2",  # retina-quality at the driver level
+        ]
+
+        browser = p.chromium.launch(headless=True, args=chromium_args)
         context = browser.new_context(
             viewport={"width": 1920, "height": 1080},
-            # ^ 16:9 Full HD — the standard presentation resolution.
-            #   In headless mode this IS the full visible canvas.
-            device_scale_factor=2,  # retina-quality captures → 3840×2160 PNG
+            # ^ 16:9 Full HD (standard presentation resolution).
+            #   No browser chrome in headless mode = this IS the full canvas.
+            device_scale_factor=2,  # retina-quality → 3840×2160 PNG
         )
         page = context.new_page()
 
         # Navigate to HTML
-        print(f"Loading (16:9 FHD viewport): {file_url}")
+        print(f"Loading (16:9 FHD viewport, GPU on): {file_url}")
         page.goto(file_url, wait_until="domcontentloaded", timeout=60000)
 
         # Wait for Tailwind CDN to finish compiling CSS + all fonts to load
         page.wait_for_function(
             """
             () => {
-                // Wait for Tailwind to initialize (adds .tailwind-ready class or similar)
-                // and all fonts to be available
                 const ready = document.fonts ? document.fonts.ready : Promise.resolve();
                 return ready.then(() => true);
             }
             """,
             timeout=30000,
         )
-        # Extra buffer for Tailwind CDN to finish compiling utility classes
+        # Extra buffer for Tailwind CDN to finish compiling all utility classes
         page.wait_for_timeout(2000)
 
         # Count slides
@@ -116,12 +122,13 @@ def capture_slides(html_path: str) -> list[bytes]:
                 }})()
                 """
             )
-            # Let CSS transition settle
-            page.wait_for_timeout(400)
+            # Let CSS transition fully settle (CSS transition = 0.6s,
+            # wait 1.2s = 2× transition time for safety + reflow)
+            page.wait_for_timeout(1200)
 
             # Screenshot the visible viewport (full_page=False = capture only
-            # the 1920×1080 visible area, which is exactly what the user sees
-            # in a browser at F11 full-screen on a 16:9 FHD display)
+            # the 1920×1080 visible area — this is exactly the user's
+            # full-screen browser view at F11, 16:9 FHD)
             png_bytes = page.screenshot(full_page=False, type="png")
             screenshots.append(png_bytes)
             print(f"  Slide {i + 1}/{slide_count} captured ({len(png_bytes) / 1024:.0f} KB)")
