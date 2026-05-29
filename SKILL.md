@@ -1,7 +1,7 @@
 ---
 name: ppt-generator
-version: "3.7"
-description: "HTML-based presentation slide generator using the Fluid Intelligence design system — glassmorphism, Electric Blue, immersive 16:9 with 10 Layout A-J templates. Generates full-screen HTML slides with keyboard/scroll navigation and optional PPTX export. v3.5 simplified to single-theme Fluid Intelligence."
+version: "3.13"
+description: "HTML-based presentation slide generator using the Fluid Intelligence design system — glassmorphism, Electric Blue, immersive 16:9 with 12 content templates (Layout A-L). Generates full-screen HTML slides with keyboard/scroll navigation and optional PPTX export. v3.13 adds product-intro and industry-grid templates + calc() spacing fix."
 agent_created: true
 ---
 
@@ -47,7 +47,7 @@ Full design system details are in `references/design_system.md`. Load it when de
 
 ## Page Templates
 
-Seven template types are available in `assets/templates/`:
+Ten template types are available in `assets/templates/`:
 
 | Template | File | Purpose |
 |----------|------|---------|
@@ -55,6 +55,8 @@ Seven template types are available in `assets/templates/`:
 | TOC | `toc.html` | Table of contents with glassmorphism left panel + numbered list |
 | Content (Text/Cards) | `content.html` | Multi-section content: 3-card grid, numbered list, 2x2 icon grid |
 | Content (Text Grid) | `content-text-grid.html` | **CANONICAL** 4x2 glass card grid with icons — use for all text+icon card grids |
+| Content (Text Industry) | `content-text-industry.html` | **v3.13** 4x2 industry/sector showcase grid — 8 gradient-icon glass cards for 行业应用/业务场景/产品能力 |
+| Content (Text Intro) | `content-text-intro.html` | **v3.13** Product intro/positioning page — hero header + 3 positioning cards + split bottom (numbered list + 2x2 grid) |
 | Content (Table) | `content-table.html` | Data table with glass container, primary header, hover rows |
 | Content (Case Study) | `content-case.html` | Scenario case study: pain points, solution flow, business metrics |
 | Content (Timeline) | `content-timeline.html` | Horizontal timeline with alternating milestone cards |
@@ -91,7 +93,7 @@ If the user only gave a topic name without specific content:
    - Common use cases or applications
 
 2. **Summarize findings** into a structured outline:
-   - 1 cover slide: Title + subtitle + right-side hero image (fixed: 腾讯滨海大厦)
+   - 1 cover slide: Title + subtitle + right-side hero image (fixed: 科技城市场景)
    - 1 TOC slide: 4-10 key sections
    - 3-N content slides: One per TOC section, with bullet points, cards, or data
    - 1 ending slide: Thank you / Q&A
@@ -158,6 +160,8 @@ Create a single self-contained HTML file that includes all slides.
    - Layout F → read `assets/templates/content-case.html`
    - Layout G → read `assets/templates/content-timeline.html`
    - Layout H/I/J → read `assets/templates/content.html` (use Layout reference patterns)
+   - Layout K → read `assets/templates/content-text-industry.html`
+   - Layout L → read `assets/templates/content-text-intro.html`
 3. **Apply the layout-specific CSS and HTML patterns** from the Layout Reference section below
 4. **NEVER** generate a content slide from scratch — always use the layout's canonical structure
 
@@ -191,7 +195,7 @@ Create a single self-contained HTML file that includes all slides.
 6. Apply design system colors and typography consistently across all slides.
 
 **Template assembly:**
-- Use: `cover.html`, `toc.html`, `content.html` (Layout A/B/C/D), `content-table.html` (E), `content-case.html` (F), `content-timeline.html` (G), `ending.html`
+- Use: `cover.html`, `toc.html`, `content.html` (Layout A/B/C/D H/I/J), `content-text-grid.html` (D), `content-text-industry.html` (K), `content-text-intro.html` (L), `content-table.html` (E), `content-case.html` (F), `content-timeline.html` (G), `ending.html`
 - Include all glassmorphism CSS, Google Fonts, and Material Symbols
 - Cover image generation applies (see Cover Image Generation section)
 
@@ -211,6 +215,8 @@ Before generating ANY content slide HTML, classify the page content type and exp
 | Growth story, evolution, trend | **Layout H (Growth)** | `content.html` | SVG growth curve + absolute-positioned milestones |
 | Product matrix, tech stack, hierarchy | **Layout I (Architecture)** | `content.html` | Layered tiers, vertical-text labels, color-coded blocks |
 | Team intro, expert network | **Layout J (Expert)** | `content.html` | Center hub + radiating profile cards + bottom metrics |
+| Industry showcase, sector comparison, business scenarios (8 items) | **Layout K (Industry Grid)** | `content-text-industry.html` | 4x2 glass card grid, gradient icon circles side-by-side with titles + descriptions |
+| Product intro, positioning page, value proposition overview | **Layout L (Product Intro)** | `content-text-intro.html` | Hero header + 3 positioning cards (colored left borders) + split bottom: numbered list + 2x2 form grid |
 
 **For headers on ALL layouts**: use parallelogram blue accent bar + page title pattern.
 
@@ -226,6 +232,13 @@ Before generating ANY content slide HTML, classify the page content type and exp
 - Reduce padding from `p-10 lg:p-16` to `p-8 lg:p-12` when content is dense
 - Always add `overflow-hidden` and `flex-shrink-0` on headers, `min-h-0` on scrollable areas
 - Numbered list items MUST use `flex items-start` (NOT `items-center`) to handle multiline text
+
+**CSS calc() spacing rule** (CRITICAL — per CSS spec §8.1.1):
+- `calc()` expressions MUST have whitespace on both sides of `+` and `-` operators
+- ❌ WRONG: `calc(6rem+110px)`, `calc(50%-10px)`, `calc(50%+3px)`
+- ✅ RIGHT: `calc(6rem + 110px)`, `calc(50% - 10px)`, `calc(50% + 3px)`
+- Without whitespace, browsers reject the value as invalid, causing layout breakage (elements collapse to zero size)
+- This applies to ALL inline styles, attributes, and CSS blocks — no exceptions
 
 **Required fonts** (include in `<head>`):
 ```html
@@ -250,9 +263,14 @@ Additional CSS for Layout F/G — see each template's Layout reference section f
 .slide.below { transform: translateY(100vh); }
 ```
 
-## Cover Image
+## Cover & TOC Images
 
-封面右侧永远使用默认图片。在 Step 4 生成 HTML 之前，将 `assets/cover-default-hero.jpg`（腾讯滨海大厦）复制到 workspace 并设为 `{{COVER_IMAGE_URL}}`，`{{COVER_IMAGE_ALT}}` 设为 "腾讯滨海大厦"。不进行 AI 图片生成。
+封面右侧和TOC左侧始终使用默认图片，不进行 AI 图片生成。
+
+在 Step 4 生成 HTML 之前：
+1. 将 `assets/cover-default-hero.jpg`（科技城市场景）复制到 workspace
+2. 封面：`{{COVER_IMAGE_URL}}` 设为复制后的图片文件名，`{{COVER_IMAGE_ALT}}` 设为 "科技城市场景"
+3. TOC：`{{DECORATION_IMG_URL}}` 也设为同一个图片文件名，`onerror` fallback 保持不变
 
 ### Step 5: Deliver the HTML
 
@@ -512,31 +530,38 @@ Horizontal timeline with alternating up/down nodes, connected by dots and connec
 
 **Rules**: Nodes alternate up/down, first node on top, insert spacer dots between every 2-3 nodes. Max 8-10 milestones per page.
 
-**CRITICAL — Milestone container positioning fix (v3.6)**:
-The template comment shows `style="top:0"` on milestone containers. This is WRONG and causes all markers to cluster at the top. The correct pattern:
+**CRITICAL — Timeline connector + marker positioning (v3.12 fix)**:
 
+The connector MUST dynamically stretch from card to marker using `top` + `bottom` dual-anchor (NOT fixed `h-*`). Fixed heights (h-20/h-24) cannot reach the marker at container 50% on most viewports, leaving visible gaps. The marker MUST also be offset 3px toward its card (NOT all identically on center at `top:50%`).
+
+**UP = card ABOVE the line (marker offset below line toward card, connector stretches DOWN):**
 ```html
-<!-- UP position (above the line): -->
 <div class="absolute left-[8%] top-0 bottom-0 w-0">
-  <!-- top-0 + bottom-0 → container stretches full viewport height → top:50% on marker works -->
-  <div class="milestone-marker"></div>
-  <div class="connector-line h-24" style="left:0; bottom:6px"></div>
-  <div class="info-card bottom-28" style="left:0">
-    ...content...
-  </div>
-</div>
-
-<!-- DOWN position (below the line): -->
-<div class="absolute left-[34%] top-0 bottom-0 w-0">
-  <div class="milestone-marker"></div>
-  <div class="connector-line h-24" style="left:0; top:6px"></div>
-  <div class="info-card top-28" style="left:0">
+  <div class="milestone-marker" style="top:calc(50% + 3px);"></div>
+  <!-- dual-anchor stretch: from just below card to just above marker -->
+  <div class="connector-line" style="left:0; top:calc(6rem + 110px); bottom:calc(50% - 10px); background:linear-gradient(180deg,#0050cb,#00ccf9);"></div>
+  <div class="info-card top-24" style="left:0">
     ...content...
   </div>
 </div>
 ```
 
-The key: use `top-0 bottom-0` to stretch the container to full viewport height, so `.milestone-marker { top: 50% }` correctly aligns with the timeline line at 50% of the page. Without `bottom-0`, the container collapses to zero height and markers are misplaced.
+**DOWN = card BELOW the line (marker offset above line toward card, connector stretches UP):**
+```html
+<div class="absolute left-[34%] top-0 bottom-0 w-0">
+  <div class="milestone-marker" style="top:calc(50% - 3px);"></div>
+  <!-- dual-anchor stretch: from just above card to just below marker -->
+  <!-- gradient 0deg = dark at card (bottom) → light at marker (top) -->
+  <div class="connector-line" style="left:0; bottom:calc(6rem + 110px); top:calc(50% + 10px); background:linear-gradient(0deg,#0050cb,#00ccf9);"></div>
+  <div class="info-card bottom-24" style="left:0">
+    ...content...
+  </div>
+</div>
+```
+
+**Why v3.11**: v3.8 fixed UP/DOWN swap. v3.10 fixed DOWN gradient direction. But both used fixed `h-20`/`h-24` heights that only reach ~80-96px from the card — typical gap from card to marker is ~120-180px on 1080p. Result: connector visually "floats" near card, never reaching the marker. Dual-anchor `top`+`bottom` eliminates the gap entirely. The 3px marker offset visually distinguishes card ownership.
+
+**Why v3.12 (calc-spacing)**: ALL `calc()` expressions MUST have whitespace on both sides of `+` and `-` operators per CSS spec. `calc(6rem+110px)` is INVALID — browsers reject it and fall back to `auto`, causing connectors to have zero height. Always use `calc(6rem + 110px)`, `calc(50% - 10px)`, `calc(50% + 3px)`.
 
 ### Layout H: 增长曲线 (Growth Timeline — for growth stories, evolution, trend)
 
@@ -647,6 +672,115 @@ Center shield icon + ring keywords + 3 left/right "avatar+text" nodes, bottom ac
 
 **Key CSS**: skew-banner (`transform: skewX(-20deg)`), expert-photo (`w-16 h-16 rounded-full`), central-circle-dashed (`border: 1px dashed #0066ff; border-radius: 50%`).
 
+### Layout K: 行业网格 (Industry Grid — for sector showcase, business scenarios, 8-item category pages)
+
+**v3.13 NEW** — Dedicated 4x2 glass card grid for industry/sector/category showcase pages. Each card features a blue-gradient circular icon + title side-by-side with description below.
+
+```html
+<main class="aspect-16-9 w-full flex flex-col px-margin-desktop py-8 relative overflow-hidden">
+  <!-- Background Atmosphere -->
+  <div class="absolute -top-[20%] -right-[10%] w-[60%] h-[60%] bg-primary-container/5 blur-[120px] rounded-full pointer-events-none"></div>
+  <div class="absolute -bottom-[20%] -left-[10%] w-[50%] h-[50%] bg-secondary-container/5 blur-[100px] rounded-full pointer-events-none"></div>
+
+  <header class="flex justify-between items-end w-full mb-12 z-10">
+    <div class="flex items-center gap-4">
+      <div class="w-12 h-12 bg-primary-container flex items-center justify-center transform -skew-x-12">
+        <span class="material-symbols-outlined text-white text-3xl skew-x-12" style="font-variation-settings:'FILL' 1;">ICON</span>
+      </div>
+      <h1 class="font-headline-lg text-headline-lg italic header-gradient-text tracking-tight">TITLE</h1>
+    </div>
+  </header>
+
+  <div class="grid grid-cols-4 grid-rows-2 gap-gutter-desktop flex-grow z-10 pb-8">
+    <!-- 8 cards, each: glass-card with industry-icon-bg circle + title + description -->
+    <article class="glass-card rounded-xl p-6 flex flex-col">
+      <div class="flex items-center gap-4 mb-4">
+        <div class="industry-icon-bg w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
+          <span class="material-symbols-outlined text-white text-3xl">ICON_NAME</span>
+        </div>
+        <h2 class="font-headline-md text-headline-md text-on-surface">ITEM_TITLE</h2>
+      </div>
+      <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">ITEM_DESC</p>
+    </article>
+  </div>
+</main>
+```
+
+**When to use Layout K instead of Layout D (Grid)**:
+- Layout K: 8 items ALWAYS (4x2 grid), bigger icon circles (w-14 h-14 gradient), icon+title in same row — better for industry/sector names with short descriptions
+- Layout D: flexible item count (4/6/8), icon above title, `{{GRID_ICON}}` placeholder — better for general-purpose card grids
+- For "行业应用" / "业务场景" / "解决方案" with exactly 8 items → prefer Layout K
+
+**Key CSS**:
+```css
+.glass-card { background: rgba(255,255,255,.65); backdrop-filter: blur(24px);
+              border: 1px solid rgba(255,255,255,.4);
+              transition: all .3s cubic-bezier(.4,0,.2,1); }
+.glass-card:hover { background: rgba(255,255,255,.85); transform: translateY(-4px);
+                    box-shadow: 0 12px 32px -8px rgba(0,80,203,.12); }
+.industry-icon-bg { background: linear-gradient(135deg, #0066ff 0%, #0040a4 100%); }
+.header-gradient-text { background: linear-gradient(90deg, #0050cb 0%, #00ccf9 100%);
+                        -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+```
+
+### Layout L: 产品介绍 (Product Intro — for product positioning, value proposition pages)
+
+**v3.13 NEW** — Hero header + 3 positioning cards (colored left borders) + split bottom (numbered list + 2x2 form grid). Best for "产品介绍" / "产品定位" / "核心价值" pages.
+
+```html
+<main class="w-full h-screen flex flex-col p-10 lg:p-16 max-w-[1920px] mx-auto">
+  <!-- Hero Header -->
+  <header class="flex justify-between items-start mb-12">
+    <div>
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-4 h-10 bg-tencent-blue rounded-sm -skew-x-12"></div>
+        <h1 class="text-4xl font-bold italic text-tencent-blue tracking-tight">PAGE_TITLE</h1>
+      </div>
+      <h2 class="text-5xl font-extrabold text-tencent-blue mt-4">SUBTITLE</h2>
+    </div>
+    <!-- Logo + action buttons area -->
+  </header>
+
+  <!-- 3 Positioning Cards -->
+  <section class="grid grid-cols-3 gap-8 mb-16">
+    <!-- Each card: glass-card, left colored border, icon, title, description -->
+    <div class="relative glass-card rounded-2xl p-8 border-l-8 border-l-product-orange card-shadow">
+      <div class="w-12 h-12 bg-white border rounded-lg flex items-center justify-center mb-6">
+        <svg class="w-6 h-6 text-tencent-blue">...</svg>
+      </div>
+      <h3 class="text-2xl font-bold mb-4">产品定位</h3>
+      <p class="text-lg font-medium">DESCRIPTION</p>
+    </div>
+  </section>
+
+  <!-- Bottom Split: Left numbered list + Right 2x2 form grid -->
+  <section class="grid grid-cols-12 gap-12 flex-grow">
+    <div class="col-span-7">
+      <!-- 3 numbered items: orange circle number + text -->
+    </div>
+    <div class="col-span-5">
+      <!-- 2x2 grid: icon circle + form name -->
+    </div>
+  </section>
+</main>
+```
+
+**When to use Layout L**:
+- Product introduction / overview pages with a hero title + subtitle
+- Pages needing 3 "positioning" or "value proposition" cards with colored accents
+- Pages with a bottom dual-section: core highlights (numbered list) + product forms/features (icon grid)
+- Distinctive visual: skewed blue decorator block on title, colored left border cards (orange/blue/green)
+
+**Card colors**: card1=`border-l-product-orange`, card2=`border-l-business-blue`, card3=`border-l-strategy-green`
+
+**Key CSS**:
+```css
+.glass-card { background: rgba(255,255,255,.7); backdrop-filter: blur(10px);
+              border: 1px solid rgba(255,255,255,.3); }
+.card-shadow { box-shadow: 0 10px 30px -10px rgba(0,0,0,.05); }
+.header-italic { font-style: italic; }
+```
+
 ## Content Searching Best Practices
 
 When searching for content (Step 2):
@@ -675,6 +809,32 @@ Choose the right content layout based on the information type:
 | Growth stories, evolution, trend data | Layout H (Growth) | SVG curve + positioned milestones, dramatic arc |
 | Product matrix, tech stack, hierarchy | Layout I (Architecture) | Layered tiers with vertical labels, color-coded |
 | Team intro, expert network, capability showcase | Layout J (Expert) | Center hub + radiating nodes, profile cards |
+| Industry showcase, sector comparison, 8-item category pages | Layout K (Industry Grid) | 4x2 gradient-icon glass cards, icon inline with title |
+| Product intro, positioning page, value proposition with dual-section | Layout L (Product Intro) | Hero header + 3 accent cards + split bottom (list + grid) |
+
+**Visual Diversity Rules (v3.8 — prevents monotonous slides):**
+
+1. **No more than 2 consecutive content slides may use the same layout.** If you have 3+ consecutive slides of the same type, reclassify content to use a different layout.
+
+2. **"图文并茂" (image+text rich) ratio**: At least 40% of content slides should use visually rich layouts: Layout C (Mixed), D (Grid), F (Case), G (Timeline), H (Growth), I (Architecture), J (Expert), K (Industry Grid), or L (Product Intro). These layouts use icons, grids, flow diagrams, or imagery — not just text lists.
+
+3. **Layout B (List) usage limit**: Layout B should be used for at most 25% of content slides. For detailed explanation slides, prefer enriching content with icons/categories and using Layout D (Grid with icons) instead. Only use Layout B when content truly is a pure sequential list without visual elements.
+
+4. **Common conversion strategies**:
+   - "4 key points" as Layout B → convert to Layout D (2x2 grid with icons) if each point has a distinct theme
+   - "Feature explanation" as Layout B → convert to Layout A (3 cards) if features are comparable
+   - "Module overview" as Layout B → convert to Layout C (left text + right grid) or Layout D (grid)
+   - "Data/metrics" as Layout B → convert to Layout E (Table) for side-by-side comparison
+
+5. **Step 3 plan review**: After creating the slide plan, count layout usage. If any layout appears 3+ times, adjust the plan to redistribute layouts before proceeding to Step 4.
+
+6. **Sparse content merge rule (v3.9)**: If two adjacent content slides each have sparse content (e.g., ≤5 table rows, ≤3 bullet points, ≤2 cards) and related topics, merge them into a single slide instead of having two nearly-empty pages. Signs a slide is too sparse:
+   - Table with ≤5 rows and short cell text → likely <40% of available vertical space used
+   - List with ≤3 items and short descriptions → likely <30% of vertical space
+   - Single chart/minimal content with large `flex-grow` area → blank space >50%
+   - **Merge strategy**: Stack both sets of content vertically in one slide (e.g., two tables with a small gap, or table + summary list). Reduce cell padding and font size slightly (e.g., `text-sm`→`text-xs`, `py-3`→`py-1.5`) to fit comfortably. Place the more important content on top.
+   - **TOC update**: When merging slides, update the TOC entry to reflect the merged topic (e.g., "竞品对比分析" + "生态运营与数据" → "竞品对比与生态数据") and renumber subsequent items.
+   - **Before proceeding to Step 4**: Scan the plan for sparse slides that neighbor each other, and merge where possible.
 
 ## Quality Checklist
 
@@ -689,11 +849,11 @@ Before delivering, verify:
 **Design system checks:**
 - [ ] Colors match the design system (Electric Blue primary)
 - [ ] Glassmorphism effects applied correctly (backdrop-filter, semi-transparent borders)
-- [ ] Cover has diagonal blue overlay; right-side has 腾讯滨海大厦 default image
+- [ ] Cover has diagonal blue overlay; right-side has default hero image
 - [ ] Ending has solid blue background
 - [ ] No content overflow (each slide has `overflow:hidden`, max 4 items per slide)
 - [ ] Numbered list items use `flex items-start` (NOT `items-center`) for multiline text
-- [ ] Every content slide uses correct Layout A-J template (see Layout Selection Guide)
+- [ ] Every content slide uses correct Layout A-L template (see Layout Selection Guide)
 
 **Layout-specific checks:**
 - [ ] Layout A (Cards): 3 columns, `.card-header-gradient` CSS present, `.glass-card` defined

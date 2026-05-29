@@ -1,0 +1,121 @@
+<!--
+  Template: Content Page - Product Intro (产品介绍/定位页)
+  Type: Text Product Intro — for product positioning, value proposition, and key feature overview pages
+  Design: Hero header with skewed blue decorator + subtitle, 3 positioning cards with colored left borders,
+          split bottom: left numbered list + right 2x2 icon grid.
+  This is the canonical template for "产品介绍" / "产品定位" / "核心价值" pages.
+
+  Placeholders:
+    {{INTRO_TITLE}}           - Page title (italic blue text, e.g. "WorkBuddy 是什么？")
+    {{INTRO_SUBTITLE}}        - Large bold subtitle (e.g. "你的 AI 智能办公助手")
+    {{INTRO_LOGO_IMG}}        - Logo <img> tag in header right area
+    {{INTRO_ACTION_LINK}}     - "了解更多" action link text (e.g. "点击了解更多")
+    {{INTRO_BTN1_TEXT}}       - Nav button 1 text (e.g. "官方教程")
+    {{INTRO_BTN2_TEXT}}       - Nav button 2 text (e.g. "官网文档")
+
+    {{INTRO_CARDS}}           - 3 positioning card HTML fragments. Per-card format:
+                                <div class="relative glass-card rounded-2xl p-8 border-l-8 BORDER_COLOR card-shadow overflow-hidden">
+                                  <!-- BG Icon Overlay -->
+                                  <div class="absolute right-[-20px] top-[-10px] opacity-5 pointer-events-none">
+                                    <svg class="w-48 h-48" fill="currentColor" viewBox="0 0 24 24">BG_ICON_PATH</svg>
+                                  </div>
+                                  <div class="flex flex-col h-full relative z-10">
+                                    <div class="w-12 h-12 bg-white border border-slate-100 shadow-sm rounded-lg flex items-center justify-center mb-6">
+                                      <svg class="w-6 h-6 TEXT_COLOR" fill="none" stroke="currentColor" viewBox="0 0 24 24">ICON_PATH</svg>
+                                    </div>
+                                    <h3 class="text-2xl font-bold text-slate-800 mb-4 tracking-wide">CARD_TITLE</h3>
+                                    <p class="text-slate-600 leading-relaxed text-lg font-medium">CARD_DESC</p>
+                                  </div>
+                                </div>
+                                Colors: card1=border-l-product-orange text-tencent-blue, card2=border-l-business-blue text-business-blue,
+                                        card3=border-l-strategy-green text-strategy-green
+
+    {{INTRO_LEFT_TITLE}}      - Bottom-left section title (e.g. "核心 3 句话")
+    {{INTRO_LEFT_ICON}}       - SVG icon for left section header (e.g. "document" icon)
+    {{INTRO_LEFT_COLOR}}      - Color class for left section (e.g. "product-orange")
+    {{INTRO_LEFT_ITEMS}}      - 3 numbered item HTML fragments. Per-item format:
+                                <div class="flex items-center bg-white/60 p-4 rounded-xl border border-slate-100 shadow-sm">
+                                  <div class="w-10 h-10 rounded-full bg-COLOR text-white flex items-center justify-center font-bold text-xl mr-6 shrink-0">NUM</div>
+                                  <p class="text-xl text-slate-700 font-medium">ITEM_TEXT with <span class="text-tencent-blue font-bold italic">HIGHLIGHTS</span></p>
+                                </div>
+
+    {{INTRO_RIGHT_TITLE}}     - Bottom-right section title (e.g. "产品 4 大形态")
+    {{INTRO_RIGHT_ICON}}      - SVG icon for right section header (e.g. "grid" icon)
+    {{INTRO_RIGHT_ITEMS}}     - 4 form-item HTML fragments in 2x2 grid. Per-item format:
+                                <div class="bg-white/40 border border-white/60 rounded-xl p-6 flex flex-col items-center justify-center shadow-sm hover:bg-white/80 transition-colors">
+                                  <div class="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mb-3">
+                                    <svg class="w-8 h-8 text-tencent-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">ICON_PATH</svg>
+                                  </div>
+                                  <span class="text-lg font-bold text-slate-700 italic header-italic">FORM_NAME</span>
+                                </div>
+
+  Required CSS (include in the main HTML <style> block):
+    .glass-card { background: rgba(255,255,255,.7); backdrop-filter: blur(10px);
+                  border: 1px solid rgba(255,255,255,.3); }
+    .card-shadow { box-shadow: 0 10px 30px -10px rgba(0,0,0,.05); }
+    .header-italic { font-style: italic; }
+
+  This template MUST be loaded (read file) before generating any slide classified as "product intro" or "产品介绍" content type.
+
+  v3.13 NEW: added as new template for product introduction/positioning pages.
+-->
+<section class="slide" data-slide-type="content-text-intro">
+  <main class="w-full h-screen flex flex-col p-10 lg:p-16 max-w-[1920px] mx-auto">
+    <!-- Header Section -->
+    <header class="flex justify-between items-start mb-12">
+      <div>
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-4 h-10 bg-tencent-blue rounded-sm -skew-x-12"></div>
+          <h1 class="text-4xl font-bold italic text-tencent-blue tracking-tight">{{INTRO_TITLE}}</h1>
+        </div>
+        <h2 class="text-5xl font-extrabold text-tencent-blue mt-4">{{INTRO_SUBTITLE}}</h2>
+      </div>
+      <div class="flex flex-col items-end gap-6">
+        <div class="flex items-center">{{INTRO_LOGO_IMG}}</div>
+        <div class="flex items-center gap-6 mt-2">
+          <a class="text-tencent-blue font-medium text-lg flex items-center group" href="#">
+            {{INTRO_ACTION_LINK}} <span class="ml-1 group-hover:translate-x-1 transition-transform">→</span>
+          </a>
+          <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm cursor-pointer hover:border-tencent-blue transition-colors">
+            <svg class="w-5 h-5 text-tencent-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 10h16M4 14h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            <span class="font-medium">{{INTRO_BTN1_TEXT}}</span>
+          </div>
+          <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm cursor-pointer hover:border-tencent-blue transition-colors">
+            <svg class="w-5 h-5 text-tencent-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            <span class="font-medium">{{INTRO_BTN2_TEXT}}</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Positioning Cards (3 columns) -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16 h-auto">
+      {{INTRO_CARDS}}
+    </section>
+
+    <!-- Bottom Split Section -->
+    <section class="grid grid-cols-12 gap-12 flex-grow">
+      <!-- Left: Numbered List -->
+      <div class="col-span-12 lg:col-span-7 flex flex-col">
+        <div class="flex items-center gap-3 mb-6">
+          {{INTRO_LEFT_ICON}}
+          <h4 class="text-2xl font-bold text-slate-800">{{INTRO_LEFT_TITLE}}</h4>
+        </div>
+        <div class="space-y-4">
+          {{INTRO_LEFT_ITEMS}}
+        </div>
+      </div>
+
+      <!-- Right: 2x2 Form Grid -->
+      <div class="col-span-12 lg:col-span-5 flex flex-col">
+        <div class="flex items-center gap-3 mb-6">
+          {{INTRO_RIGHT_ICON}}
+          <h4 class="text-2xl font-bold text-slate-800">{{INTRO_RIGHT_TITLE}}</h4>
+        </div>
+        <div class="grid grid-cols-2 gap-4 flex-grow">
+          {{INTRO_RIGHT_ITEMS}}
+        </div>
+      </div>
+    </section>
+  </main>
+</section>

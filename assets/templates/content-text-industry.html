@@ -1,0 +1,75 @@
+<!--
+  Template: Content Page - Industry Grid (2x4 Glass Cards with Gradient Icons)
+  Type: Text Industry Grid — for industry/sector/category showcase pages (8 items in 4x2 grid)
+  Design: Each card has a blue-gradient circular icon + title side-by-side, then description below.
+  This is the canonical template for "行业应用" / "业务场景" / "产品能力" grid pages.
+
+  Placeholders:
+    {{IND_TITLE}}             - Page title (header gradient text, e.g. "WorkBuddy优势分析")
+    {{IND_HEADER_ICON}}       - Material Symbols icon name for header parallelogram (e.g. "analytics")
+    {{IND_LOGO_IMG}}          - Logo <img> tag or empty string ""
+    {{IND_ITEMS}}             - 8 grid card HTML fragments. Per-card format:
+                                <article class="glass-card rounded-xl p-6 flex flex-col">
+                                  <div class="flex items-center gap-4 mb-4">
+                                    <div class="industry-icon-bg w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
+                                      <span class="material-symbols-outlined text-white text-3xl">ICON_NAME</span>
+                                    </div>
+                                    <h2 class="font-headline-md text-headline-md text-on-surface">ITEM_TITLE</h2>
+                                  </div>
+                                  <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">ITEM_DESC</p>
+                                </article>
+                                Always 8 items in grid-cols-4 grid-rows-2.
+    {{IND_FOOTER_LEFT}}       - Footer left text (e.g. "Case Reference System")
+    {{IND_FOOTER_RIGHT}}      - Footer right text (e.g. "© 悦智.AI 2024")
+    {{IND_FOOTER_SEPARATOR}}  - Footer separator (e.g. "数字化转型案例参考")
+
+  Required CSS (include in the main HTML <style> block):
+    .glass-card { background: rgba(255,255,255,.65); backdrop-filter: blur(24px);
+                  border: 1px solid rgba(255,255,255,.4);
+                  transition: all .3s cubic-bezier(.4,0,.2,1); }
+    .glass-card:hover { background: rgba(255,255,255,.85); transform: translateY(-4px);
+                        box-shadow: 0 12px 32px -8px rgba(0,80,203,.12); }
+    .industry-icon-bg { background: linear-gradient(135deg, #0066ff 0%, #0040a4 100%); }
+    .header-gradient-text { background: linear-gradient(90deg, #0050cb 0%, #00ccf9 100%);
+                            -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .aspect-16-9 { aspect-ratio: 16/9; max-height: 100vh; width: 100%; }
+
+  This template MUST be loaded (read file) before generating any slide classified as "industry grid" or "sector showcase" content type.
+
+  v3.13 NEW: added as standalone template for 8-item industry/category grid pages.
+-->
+<section class="slide" data-slide-type="content-text-industry">
+  <main class="aspect-16-9 w-full flex flex-col px-margin-desktop py-8 relative overflow-hidden">
+    <!-- Background Atmosphere -->
+    <div class="absolute -top-[20%] -right-[10%] w-[60%] h-[60%] bg-primary-container/5 blur-[120px] rounded-full pointer-events-none"></div>
+    <div class="absolute -bottom-[20%] -left-[10%] w-[50%] h-[50%] bg-secondary-container/5 blur-[100px] rounded-full pointer-events-none"></div>
+
+    <!-- Header: parallelogram icon + gradient title + logo -->
+    <header class="flex justify-between items-end w-full mb-12 z-10">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-primary-container flex items-center justify-center transform -skew-x-12">
+          <span class="material-symbols-outlined text-white text-3xl skew-x-12" style="font-variation-settings: 'FILL' 1;">{{IND_HEADER_ICON}}</span>
+        </div>
+        <h1 class="font-headline-lg text-headline-lg italic header-gradient-text tracking-tight">{{IND_TITLE}}</h1>
+      </div>
+      <div class="h-10">
+        {{IND_LOGO_IMG}}
+      </div>
+    </header>
+
+    <!-- Grid: 4x2 glass cards -->
+    <div class="grid grid-cols-4 grid-rows-2 gap-gutter-desktop flex-grow z-10 pb-8">
+      {{IND_ITEMS}}
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-auto pt-6 border-t border-outline-variant/20 flex justify-between items-center z-10">
+      <span class="font-label-sm text-label-sm text-outline uppercase tracking-widest">{{IND_FOOTER_LEFT}}</span>
+      <div class="flex items-center gap-2">
+        <span class="font-label-sm text-label-sm text-outline">{{IND_FOOTER_RIGHT}}</span>
+        <div class="w-1 h-1 bg-outline rounded-full"></div>
+        <span class="font-label-sm text-label-sm text-outline">{{IND_FOOTER_SEPARATOR}}</span>
+      </div>
+    </footer>
+  </main>
+</section>

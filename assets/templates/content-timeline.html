@@ -56,11 +56,25 @@
 CRITICAL: Each milestone container MUST use top-0 bottom-0 to stretch to full viewport height.
 Without bottom-0, the container collapses and .milestone-marker { top: 50% } fails to align.
 
-For UP position (above the line):
+CONNECTOR POSITIONING RULE (v3.11 fix): Connectors MUST use `top` + `bottom` dual-anchor for dynamic stretching, NOT fixed `h-*` heights. Fixed heights (h-20, h-24) cannot reach the marker at 50% on larger viewports.
+
+- UP = card ABOVE the timeline:
+  - Card at top-24 (6rem from top)
+  - Marker offset: +3px below the line (toward card)
+  - Connector: `top:calc(6rem + 110px)` (just below card) + `bottom:calc(50% - 10px)` (just above marker)
+  - Gradient: `linear-gradient(180deg, #0050cb, #00ccf9)` (dark at card→light at marker)
+
+- DOWN = card BELOW the timeline:
+  - Card at bottom-24 (6rem from bottom)
+  - Marker offset: -3px above the line (toward card)
+  - Connector: `bottom:calc(6rem + 110px)` (just above card) + `top:calc(50% + 10px)` (just below marker)
+  - Gradient: `linear-gradient(0deg, #0050cb, #00ccf9)` (dark at card→light at marker)
+
+For UP position (card in UPPER half, connector stretches DOWN, marker below line):
 <div class="absolute left-[8%] top-0 bottom-0 w-0">
-  <div class="milestone-marker"></div>
-  <div class="connector-line h-24" style="left:0; bottom:6px"></div>
-  <div class="info-card bottom-28" style="left:0">
+  <div class="milestone-marker" style="top:calc(50% + 3px);"></div>
+  <div class="connector-line" style="left:0; top:calc(6rem + 110px); bottom:calc(50% - 10px); background:linear-gradient(180deg,#0050cb,#00ccf9);"></div>
+  <div class="info-card top-24" style="left:0">
     <div class="milestone-text-group">
       <div class="date-label text-[#0050cb]">2025.01</div>
       <div class="milestone-title">DeepSeek R1 发布</div>
@@ -69,11 +83,11 @@ For UP position (above the line):
   </div>
 </div>
 
-For DOWN position (below the line):
+For DOWN position (card in LOWER half, connector stretches UP, marker above line):
 <div class="absolute left-[34%] top-0 bottom-0 w-0">
-  <div class="milestone-marker"></div>
-  <div class="connector-line h-20" style="left:0; top:6px"></div>
-  <div class="info-card top-24" style="left:0">
+  <div class="milestone-marker" style="top:calc(50% - 3px);"></div>
+  <div class="connector-line" style="left:0; bottom:calc(6rem + 110px); top:calc(50% + 10px); background:linear-gradient(0deg,#0050cb,#00ccf9);"></div>
+  <div class="info-card bottom-24" style="left:0">
     <div class="milestone-text-group">
       <div class="date-label text-[#8e44ad]">2025.07 <span class="star-icon">★</span></div>
       <div class="milestone-title">CodeBuddy IDE 发布</div>
@@ -82,7 +96,6 @@ For DOWN position (below the line):
   </div>
 </div>
 
-Note: Alternating up/down positions along the diagonal prevents card overlap.
-Typical pattern: milestone 1=UP, 2=UP, 3=DOWN, 4=UP, 5=DOWN, 6=UP, 7=DOWN, 8=UP, 9=DOWN
-Adjust connector heights (h-20 to h-36) and offsets (top-24/top-32/bottom-28/bottom-36) for varying text lengths.
+Note: Alternating up/down positions along the horizontal axis prevents card overlap.
+Typical pattern: milestone 1=UP, 2=UP, 3=DOWN, 4=UP, 5=DOWN, 6=UP, 7=DOWN, 8=UP, 9=DOWN.
 -->
