@@ -1,6 +1,6 @@
 ---
 name: ppt-generator
-version: "3.5"
+version: "3.6"
 description: "HTML-based presentation slide generator using the Fluid Intelligence design system — glassmorphism, Electric Blue, immersive 16:9 with 10 Layout A-J templates. Generates full-screen HTML slides with keyboard/scroll navigation and optional PPTX export. v3.5 simplified to single-theme Fluid Intelligence."
 agent_created: true
 ---
@@ -54,6 +54,7 @@ Seven template types are available in `assets/templates/`:
 | Cover | `cover.html` | Title slide with diagonal blue overlay + background image + hero image area (built-in SVG fallback) |
 | TOC | `toc.html` | Table of contents with glassmorphism left panel + numbered list |
 | Content (Text/Cards) | `content.html` | Multi-section content: 3-card grid, numbered list, 2x2 icon grid |
+| Content (Text Grid) | `content-text-grid.html` | **CANONICAL** 4x2 glass card grid with icons — use for all text+icon card grids |
 | Content (Table) | `content-table.html` | Data table with glass container, primary header, hover rows |
 | Content (Case Study) | `content-case.html` | Scenario case study: pain points, solution flow, business metrics |
 | Content (Timeline) | `content-timeline.html` | Horizontal timeline with alternating milestone cards |
@@ -123,7 +124,7 @@ Slide 3-N: Content slides
   For each content slide, decide layout type:
   - "cards": 3-column glassmorphism cards with gradient headers (good for advantages, features, comparisons)
   - "list": Numbered list with icon circles (good for steps, key points, bullet content)
-  - "grid": 4x2 or 3x2 grid of items with icons (good for categories, industries, product matrix)
+  - "grid": 4x2 or 3x2 grid of items with icons (good for categories, industries, product matrix, text+icon cards) → uses `content-text-grid.html`
   - "mixed": Left text + right 2x2 grid (good for overview + product forms)
   - "table": Data table with glass container + highlighted rows (good for scenario comparisons, specs)
   - "case": Case study: pain points → solution flow → business metrics (good for success stories, solutions)
@@ -157,7 +158,8 @@ Create a single self-contained HTML file that includes all slides.
 
 1. **Read the plan from Step 3** — identify which layout was assigned to each slide
 2. **Load the correct template file** for each unique layout used:
-   - Layout A/B/C/D → read `assets/templates/content.html`
+   - Layout A/B/C → read `assets/templates/content.html`
+   - Layout D → read `assets/templates/content-text-grid.html`
    - Layout E → read `assets/templates/content-table.html`
    - Layout F → read `assets/templates/content-case.html`
    - Layout G → read `assets/templates/content-timeline.html`
@@ -208,7 +210,7 @@ Before generating ANY content slide HTML, classify the page content type and exp
 | Advantages, features, value props | **Layout A (Cards)** | `content.html` | 3-column gradient header cards with icon + description |
 | Steps, key points, bullet content | **Layout B (List)** | `content.html` | Numbered circles (`bg-product-orange`) + flex items-start |
 | Overview + detail split | **Layout C (Mixed)** | `content.html` | 12-col grid: left col-span-7 text + right col-span-5 2x2 grid |
-| Industries, categories, product matrix | **Layout D (Grid)** | `content.html` | icon-grid 2x4 or 3x2 with `industry-icon-bg` gradient circles |
+| Industries, categories, product matrix, text+icon grids | **Layout D (Grid)** | `content-text-grid.html` | 4x2 or 3x2 icon-driven grid with glass cards, `industry-icon-bg` gradient circles, header gradient text |
 | Comparisons, specs, scenario data | **Layout E (Table)** | `content-table.html` | `glass-container` table, primary header, hover rows |
 | Success stories, solution demos | **Layout F (Case)** | `content-case.html` | 3-zone: pain points → solution flow → business metrics |
 | Roadmap, milestones, history | **Layout G (Timeline)** | `content-timeline.html` | Horizontal line, alternating up/down nodes, dot+connect-line |
@@ -383,28 +385,41 @@ Left text list + right 2x2 icon grid, clear visual contrast.
 </section>
 ```
 
-### Layout D: 内容条目网格 (Item Grid — for categories, industries, product matrix)
+### Layout D: 内容条目网格 (Item Grid — for categories, industries, product matrix, text+icon pages)
 
-2x4 or 3x2 equal-spaced grid, each entry = circular gradient icon + title + description.
+**CANONICAL template**: `assets/templates/content-text-grid.html` — this is the authoritative source for ALL text+icon grid slides. The template provides a 4x2 glass card grid with header (parallelogram icon + gradient title + logo) and footer.
 
+Card structure per item (use inside `{{GRID_ITEMS}}`):
 ```html
-<div class="grid grid-cols-4 grid-rows-2 gap-gutter-desktop flex-grow">
-  <article class="glass-card rounded-xl p-6 flex flex-col">
-    <div class="flex items-center gap-4 mb-4">
-      <div class="industry-icon-bg w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
-        <span class="material-symbols-outlined text-white text-3xl">icon_name</span>
-      </div>
-      <h2 class="font-headline-md text-headline-md">Item Title</h2>
+<article class="glass-card rounded-xl p-6 flex flex-col">
+  <div class="flex items-center gap-4 mb-4">
+    <div class="industry-icon-bg w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
+      <span class="material-symbols-outlined text-white text-3xl">ICON_NAME</span>
     </div>
-    <p class="font-body-md text-body-md text-on-surface-variant">Description, max 2 lines.</p>
-  </article>
-  <!-- Max 8 items (2x4) or 6 (3x2) -->
-</div>
+    <h2 class="font-headline-md text-headline-md text-on-surface">ITEM_TITLE</h2>
+  </div>
+  <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">ITEM_DESC</p>
+</article>
 ```
 
-**Key CSS**:
+Grid sizing rules:
+- 8 items: `grid-cols-4 grid-rows-2`
+- 6 items: `grid-cols-3 grid-rows-2`
+- 4 items: `grid-cols-2 grid-rows-2`
+- 3 items: `grid-cols-3 grid-rows-1`
+- 2 items: `grid-cols-2 grid-rows-1`
+
+**Key CSS** (must be included in main `<style>`):
 ```css
+.glass-card { background: rgba(255,255,255,.65); backdrop-filter: blur(24px);
+              border: 1px solid rgba(255,255,255,.4);
+              transition: all .3s cubic-bezier(.4,0,.2,1); }
+.glass-card:hover { background: rgba(255,255,255,.85); transform: translateY(-4px);
+                    box-shadow: 0 12px 32px -8px rgba(0,80,203,.12); }
 .industry-icon-bg { background: linear-gradient(135deg, #0066ff 0%, #0040a4 100%); }
+.header-gradient-text { background: linear-gradient(90deg, #0050cb 0%, #00ccf9 100%);
+                        -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.aspect-16-9 { aspect-ratio: 16/9; max-height: 100vh; width: 100%; }
 ```
 
 ### Layout E: 数据表格 (Data Table — for comparisons, specs, scenario data)
@@ -518,6 +533,32 @@ Horizontal timeline with alternating up/down nodes, connected by dots and connec
 
 **Rules**: Nodes alternate up/down, first node on top, insert spacer dots between every 2-3 nodes. Max 8-10 milestones per page.
 
+**CRITICAL — Milestone container positioning fix (v3.6)**:
+The template comment shows `style="top:0"` on milestone containers. This is WRONG and causes all markers to cluster at the top. The correct pattern:
+
+```html
+<!-- UP position (above the line): -->
+<div class="absolute left-[8%] top-0 bottom-0 w-0">
+  <!-- top-0 + bottom-0 → container stretches full viewport height → top:50% on marker works -->
+  <div class="milestone-marker"></div>
+  <div class="connector-line h-24" style="left:0; bottom:6px"></div>
+  <div class="info-card bottom-28" style="left:0">
+    ...content...
+  </div>
+</div>
+
+<!-- DOWN position (below the line): -->
+<div class="absolute left-[34%] top-0 bottom-0 w-0">
+  <div class="milestone-marker"></div>
+  <div class="connector-line h-24" style="left:0; top:6px"></div>
+  <div class="info-card top-28" style="left:0">
+    ...content...
+  </div>
+</div>
+```
+
+The key: use `top-0 bottom-0` to stretch the container to full viewport height, so `.milestone-marker { top: 50% }` correctly aligns with the timeline line at 50% of the page. Without `bottom-0`, the container collapses to zero height and markers are misplaced.
+
 ### Layout H: 增长曲线 (Growth Timeline — for growth stories, evolution, trend)
 
 SVG trend line + absolute-positioned milestone nodes for growth visualization.
@@ -570,7 +611,26 @@ Layered architecture display, left vertical labels + right multi-level color-cod
 </main>
 ```
 
-**Color variables**: tier-solutions `#00b5d1`, tier-paas `#0066ff`, tier-iaas `#0052cc`.
+**Color variables** (use exact tailwind classes):
+- 2 tiers: tier-solutions `#00b5d1` (cyan), tier-platform `#0066ff` (blue)
+- 3 tiers: add tier-infra `#0052cc` (indigo)
+- 4 tiers: add tier-data `#7c3aed` (violet)
+- 5 tiers: add tier-deploy `#64748b` (slate)
+
+**Tier sizing by layer count**:
+| Layers | Sizing formula | Example |
+|--------|---------------|---------|
+| 2 | `flex-[3]` + `flex-[2]` | large top, smaller bottom |
+| 3 | `flex-[2]` + `flex-[2]` + `flex-[2]` | equal 3-way split |
+| 4 | `flex-[3]` + `flex-[1.5]` + `flex-[1.5]` + `flex-[1.5]` | large top + 3 small |
+| 5 | `flex-[2]` + `flex-[1]` + `flex-[1]` + `flex-[1]` + `flex-[1]` | proportional, all readable |
+
+**CRITICAL**: When using 5 layers, NEVER use `h-[20%]` — it's too cramped. Use `flex-[2]` for the primary layer and `flex-[1]` for the rest. Font size must remain >= 14px (text-sm) in all tiers.
+
+**Layer label naming** — use descriptive Chinese labels, one of these sets:
+- 业务层 / 产品层 / 平台层 / 数据层 / 基础设施层
+- 表现层 / 业务逻辑层 / 数据访问层 / 服务层 / 存储层
+- Or topic-specific layered names
 
 **Key CSS**:
 ```css
@@ -629,7 +689,7 @@ Choose the right content layout based on the information type:
 | Advantages, features, value props | Layout A (Cards) | 3-col gradient cards with icon+description |
 | Steps, key points, bullet points | Layout B (List) | Numbered circles convey sequence |
 | Overview + detail split | Layout C (Two-Column) | Asymmetric left text + right grid |
-| Industries, categories, product matrix | Layout D (Grid) | 2x4 or 3x2 icon-driven equal-weight grid |
+| Industries, categories, product matrix, icon+text cards | Layout D (Grid) | 4x2 or 3x2 icon-driven equal-weight grid with glass cards (`content-text-grid.html`) |
 | Scenario data, industry comparisons | Layout E (Table) | Rows scan across dimensions, metrics highlight |
 | Success stories, solution demos | Layout F (Case) | Pain→Solution→Impact narrative arc |
 | Roadmap, milestones, process history | Layout G (Timeline) | Alternating up/down nodes, clear time axis |

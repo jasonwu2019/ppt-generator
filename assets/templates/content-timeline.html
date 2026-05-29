@@ -53,8 +53,11 @@
 </section>
 
 <!-- Usage example for each milestone block:
+CRITICAL: Each milestone container MUST use top-0 bottom-0 to stretch to full viewport height.
+Without bottom-0, the container collapses and .milestone-marker { top: 50% } fails to align.
+
 For UP position (above the line):
-<div class="absolute left-[8%]" style="top:0">
+<div class="absolute left-[8%] top-0 bottom-0 w-0">
   <div class="milestone-marker"></div>
   <div class="connector-line h-24" style="left:0; bottom:6px"></div>
   <div class="info-card bottom-28" style="left:0">
@@ -67,7 +70,7 @@ For UP position (above the line):
 </div>
 
 For DOWN position (below the line):
-<div class="absolute left-[34%]" style="top:0">
+<div class="absolute left-[34%] top-0 bottom-0 w-0">
   <div class="milestone-marker"></div>
   <div class="connector-line h-20" style="left:0; top:6px"></div>
   <div class="info-card top-24" style="left:0">
@@ -81,5 +84,5 @@ For DOWN position (below the line):
 
 Note: Alternating up/down positions along the diagonal prevents card overlap.
 Typical pattern: milestone 1=UP, 2=UP, 3=DOWN, 4=UP, 5=DOWN, 6=UP, 7=DOWN, 8=UP, 9=DOWN
-Adjust connector heights and offsets for varying text lengths.
+Adjust connector heights (h-20 to h-36) and offsets (top-24/top-32/bottom-28/bottom-36) for varying text lengths.
 -->
