@@ -1,6 +1,6 @@
 ---
 name: ppt-generator
-version: "3.2"
+version: "3.3"
 description: "HTML-based presentation slide generator supporting TWO design themes: (1) Fluid Intelligence — glassmorphism, Electric Blue, immersive 16:9; (2) Tencent Cloud Corporate — clean white, blue accent bar, professional enterprise style. Generates full-screen HTML slides with keyboard/scroll navigation and optional PPTX export. Supports cover page, table of contents, 4 content layouts, and ending page. When user has not provided specific slide content, this skill searches the web to gather information, summarizes with AI, and then builds the slides. This skill should be used when the user asks to generate/create/make a PPT, presentation, slides about any topic."
 agent_created: true
 ---
@@ -192,13 +192,29 @@ Slide 2: Table of Contents
 
 Slide 3-N: Content slides
   For each content slide, decide layout type:
-  - "cards": 2-3 glassmorphism cards (good for features, comparisons)
-  - "list": Numbered/icon list (good for steps, key points)
-  - "grid": 2x2 or 3x2 grid of items (good for categories)
-  - "mixed": Left text + right cards (good for overview + detail)
-  - "table": Data table with glass container (good for comparisons, industry data, specifications)
-  - "case": Case study with pain points + solution + metrics (good for success stories, solutions)
-  - "timeline": Diagonal timeline with milestones (good for history, roadmap, evolution)
+  - "cards": 3-column glassmorphism cards with gradient headers (good for advantages, features, comparisons)
+  - "list": Numbered list with icon circles (good for steps, key points, bullet content)
+  - "grid": 4x2 or 3x2 grid of items with icons (good for categories, industries, product matrix)
+  - "mixed": Left text + right 2x2 grid (good for overview + product forms)
+  - "table": Data table with glass container + highlighted rows (good for scenario comparisons, specs)
+  - "case": Case study: pain points → solution flow → business metrics (good for success stories, solutions)
+  - "timeline": Horizontal milestone timeline with alternating up/down nodes (good for roadmap, history)
+  - "growth": SVG growth curve with animated trend line + positioned milestones (good for growth story, evolution)
+  - "architecture": Multi-tier layered architecture with vertical labels (good for product matrix, tech stack)
+  - "expert": Center hub + surrounding character nodes with profile cards (good for team intro, expert network)
+
+  **MANDATORY**: Every content slide plan entry MUST include template file annotation:
+  ```
+  Slide 4: [Title]
+    Layout: cards (Layout A, file: content.html)
+    Content: [bullet points]
+  Slide 5: [Title]
+    Layout: case (Layout F, file: content-case.html)
+    Content: [case details]
+  Slide 6: [Title]
+    Layout: timeline (Layout G, file: content-timeline.html)
+    Content: [milestone items]
+  ```
 
 Slide N+1: Ending
   - Main text: [e.g., "感谢倾听" or custom]
@@ -238,6 +254,18 @@ Corporate content slides are simpler — no glassmorphism or diagonal layouts. U
 ### Step 4: Generate HTML
 
 Create a single self-contained HTML file that includes all slides.
+
+**BEFORE generating any content slide HTML, complete this pre-check:**
+
+1. **Read the plan from Step 3** — identify which layout was assigned to each slide
+2. **Load the correct template file** for each unique layout used:
+   - Layout A/B/C/D → read `assets/templates/content.html`
+   - Layout E → read `assets/templates/content-table.html`
+   - Layout F → read `assets/templates/content-case.html`
+   - Layout G → read `assets/templates/content-timeline.html`
+   - Layout H/I/J → read `assets/templates/content.html` (use Layout reference section)
+3. **Apply the layout-specific CSS and HTML patterns** from the Layout Reference section below
+4. **NEVER** generate a content slide from scratch or use a generic `<main>` wrapper — always use the layout's canonical structure
 
 **Assembly rules (common to both themes):**
 1. Read `assets/slide-engine.js` for the navigation system CSS and JS.
@@ -292,14 +320,30 @@ Create a single self-contained HTML file that includes all slides.
 .slide.below { transform: translateY(100vh); }
 ```
 
-**Content page template usage:**
-- For "cards" layout: use the 3-column glassmorphism card grid from `content.html`
-- For "list" layout: use the numbered list pattern from the "核心3句话" section in `content.html`
-- For "grid" layout: use the 2x2 product-form grid with icons in `content.html`
-- For headers: use the left-side blue accent bar + title pattern
-- For "table" layout: use `content-table.html` template
-- For "case" layout: use `content-case.html` template
-- For "timeline" layout: use `content-timeline.html` template
+**Content page template usage (MANDATORY — every content slide MUST match a layout):**
+
+Before generating ANY content slide HTML, you MUST first classify the page content type and explicitly select the correct layout. This is NOT optional — failure results in broken layouts as seen in user feedback.
+
+| Content Type | Layout | Template File | Key Visual Pattern |
+|-------------|--------|---------------|-------------------|
+| Advantages, features, value props | **Layout A (Cards)** | `content.html` | 3-column gradient header cards with icon + description |
+| Steps, key points, bullet content | **Layout B (List)** | `content.html` | Numbered circles (`bg-product-orange`) + flex items-start |
+| Overview + detail split | **Layout C (Mixed)** | `content.html` | 12-col grid: left col-span-7 text + right col-span-5 2x2 grid |
+| Industries, categories, product matrix | **Layout D (Grid)** | `content.html` | icon-grid 2x4 or 3x2 with `industry-icon-bg` gradient circles |
+| Comparisons, specs, scenario data | **Layout E (Table)** | `content-table.html` | `glass-container` table, primary header, hover rows |
+| Success stories, solution demos | **Layout F (Case)** | `content-case.html` | 3-zone: pain points → solution flow → business metrics |
+| Roadmap, milestones, history | **Layout G (Timeline)** | `content-timeline.html` | Horizontal line, alternating up/down nodes, dot+connect-line |
+| Growth story, evolution, trend | **Layout H (Growth)** | `content.html` | SVG growth curve + absolute-positioned milestones |
+| Product matrix, tech stack, hierarchy | **Layout I (Architecture)** | `content.html` | Layered tiers, vertical-text labels, color-coded blocks |
+| Team intro, expert network | **Layout J (Expert)** | `content.html` | Center hub + radiating profile cards + bottom metrics |
+
+**For headers on ALL layouts**: use parallelogram blue accent bar + page title pattern.
+
+**CRITICAL enforcement rule**:
+- Each content slide in Step 3 plan MUST include `Layout: X (file: Y.html)` annotation
+- When generating HTML in Step 4, read the template file specified for that layout
+- NEVER default all content slides to `content.html` or any single template
+- If a content type doesn't clearly match any layout, default to Layout B (List) — safest fallback
 
 **Content density rules** (CRITICAL — prevents layout overflow):
   - Each content slide max 4 items (cards, list items, grid cells)
@@ -372,142 +416,314 @@ If the user explicitly asks for PPTX format or says "生成PPT文件":
 
 ## Content Page Layouts Reference
 
-When generating content pages, use these layout patterns:
+基于 Fluid Intelligence 设计系统，提供 10 种内容页布局。每种布局基于已验证的 HTML 模板模式。
 
-### Layout A: Three Cards (for features, positioning, comparisons)
+### Layout A: 优势卡片 (3-Column Cards — for advantages, features, comparisons)
+
+三列并排卡片，每列包含：图标圆 + 标题 + glass-card（渐变蓝头部 + 白色内容区 + 底部英文装饰字）。
+
 ```html
 <section class="slide">
-  <main class="w-full h-screen flex flex-col p-10 lg:p-16 max-w-[1920px] mx-auto">
-    <header><!-- Title with blue accent bar --></header>
-    <section class="grid grid-cols-3 gap-8">
-      <!-- Card 1: glass-card, border-l-product-orange -->
-      <!-- Card 2: glass-card, border-l-business-blue -->
-      <!-- Card 3: glass-card, border-l-strategy-green -->
-    </section>
-  </main>
-</section>
-```
-
-### Layout B: Numbered List (for steps, key points)
-```html
-<!-- IMPORTANT: Use flex items-start for multiline text, NOT items-center -->
-<section class="slide">
-  <main class="w-full h-screen flex flex-col p-8 lg:p-12 overflow-hidden">
-    <header class="mb-6 flex-shrink-0"><!-- Title --></header>
-    <div class="space-y-3 flex-grow min-h-0 overflow-y-auto">
-      <!-- Each item: flex items-start with numbered circle + text -->
-      <!-- Max 4 items per slide, each text max 2 lines -->
+  <main class="presentation-canvas relative z-10 flex flex-col px-margin-desktop py-12">
+    <header class="flex justify-between items-center w-full mb-16">
+      <div class="flex items-center gap-4">
+        <div class="w-10 h-10 bg-primary-container parallelogram"></div>
+        <h1 class="font-headline-lg text-headline-lg italic text-gradient">优势分析</h1>
+      </div>
+      <img src="{{LOGO_URL}}" class="h-10" alt="logo"/>
+    </header>
+    <div class="grid grid-cols-3 gap-12 flex-grow items-start px-8">
+      <!-- 每列: 图标圆 + 标题 + glass-card(渐变头部 + 白色内容 + 英文底字) -->
     </div>
   </main>
 </section>
 ```
 
-### Layout C: Two-Column (for overview + detail)
+**每个卡片结构**:
 ```html
-<section class="slide">
-  <main class="w-full h-screen flex flex-col p-10 lg:p-16">
-    <header><!-- Title --></header>
-    <section class="grid grid-cols-12 gap-12 flex-grow">
-      <div class="col-span-7"><!-- Left: main content --></div>
-      <div class="col-span-5"><!-- Right: cards/grid --></div>
-    </section>
-  </main>
-</section>
-```
-
-### Layout D: 2x2 Grid (for categories, product types)
-```html
-<section class="slide">
-  <main class="w-full h-screen flex flex-col p-10 lg:p-16">
-    <header><!-- Title --></header>
-    <div class="grid grid-cols-2 gap-4 flex-grow">
-      <!-- 4 items: icon circle + label -->
+<div class="flex flex-col items-center group">
+  <div class="mb-8 p-6 bg-surface-container-low rounded-full border border-primary/10">
+    <span class="material-symbols-outlined text-[64px] text-primary">icon_name</span>
+  </div>
+  <h2 class="font-headline-md text-headline-md mb-8">优势标题</h2>
+  <div class="w-full flex flex-col rounded-xl overflow-hidden glass-card">
+    <div class="card-header-gradient py-4 px-6 text-center">
+      <h3 class="font-headline-md text-white text-lg">子标题</h3>
     </div>
-  </main>
-</section>
+    <div class="bg-white p-8 flex flex-col justify-between min-h-[160px]">
+      <p class="font-body-md text-on-surface-variant text-center">描述内容</p>
+    </div>
+  </div>
+</div>
 ```
 
-### Layout E: Data Table (for comparisons, industry data, specifications)
-
-Use `content-table.html` template with these placeholders:
-- `{{TABLE_TITLE}}`: Table section title (gradient text)
-- `{{TABLE_SUBTITLE}}`: Subtitle below title
-- `{{TABLE_HEADERS}}`: `<th>` elements inside `<tr>` in `<thead>` with `bg-primary text-on-primary`
-- `{{TABLE_ROWS}}`: `<tr>` elements with `<td>` cells, use `hover:bg-primary/5` for interactivity
-- `{{TABLE_FOOTER}}`: Footer attribution text
-- `{{LOGO_URL}}`: Logo image URL
-
-**Required CSS** (include in `<style>`):
+**关键CSS**:
 ```css
-.bg-mesh { background-color: #faf8ff;
-  background-image: radial-gradient(at 0% 0%, rgba(0,80,203,0.05) 0px, transparent 50%),
-                    radial-gradient(at 100% 0%, rgba(0,204,249,0.08) 0px, transparent 50%),
-                    radial-gradient(at 50% 100%, rgba(67,69,209,0.05) 0px, transparent 50%); }
-.parallelogram { clip-path: polygon(25% 0%, 100% 0%, 75% 100%, 0% 100%); }
+.glass-card { background: rgba(255,255,255,0.7); backdrop-filter: blur(32px);
+              border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 4px 30px rgba(0,0,0,0.05); }
+.card-header-gradient { background: linear-gradient(180deg, #0066ff 0%, #0050cb 100%); }
+```
+
+### Layout B: 编号列表 (Numbered List — for steps, key points, bullet content)
+
+编号圆 + 文本的垂直列表，每个条目带彩色编号圆。
+
+```html
+<!-- 核心3句话 模式 -->
+<div class="space-y-4">
+  <div class="flex items-center bg-white/60 p-4 rounded-xl border border-slate-100 shadow-sm">
+    <div class="w-10 h-10 rounded-full bg-product-orange text-white flex items-center justify-center font-bold text-xl mr-6 shrink-0">1</div>
+    <p class="text-xl text-slate-700 font-medium">内容文本，关键信息用 <span class="text-tencent-blue font-bold italic">高亮</span></p>
+  </div>
+  <!-- 最多4条 -->
+</div>
+```
+
+**规则**: 每条最多2行文本（~60字），使用 `flex items-start`（不是 `items-center`）处理多行。
+
+### Layout C: 左右分栏 (Two-Column — for overview + detail)
+
+左侧文本列表 + 右侧 2x2 图标网格，清晰的视觉对比。
+
+```html
+<section class="grid grid-cols-12 gap-12 flex-grow">
+  <div class="col-span-7 flex flex-col">
+    <h4 class="text-2xl font-bold mb-6">核心要点</h4>
+    <div class="space-y-4"><!-- Layout B numbered list --></div>
+  </div>
+  <div class="col-span-5 flex flex-col">
+    <h4 class="text-2xl font-bold mb-6">产品形态</h4>
+    <div class="grid grid-cols-2 gap-4 flex-grow">
+      <!-- 4个图标+标签卡片 -->
+    </div>
+  </div>
+</section>
+```
+
+### Layout D: 内容条目网格 (Item Grid — for categories, industries, product matrix)
+
+2x4 或 3x2 等间距网格，每个条目 = 圆形渐变图标 + 标题 + 描述。
+
+```html
+<div class="grid grid-cols-4 grid-rows-2 gap-gutter-desktop flex-grow">
+  <article class="glass-card rounded-xl p-6 flex flex-col">
+    <div class="flex items-center gap-4 mb-4">
+      <div class="industry-icon-bg w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
+        <span class="material-symbols-outlined text-white text-3xl">icon_name</span>
+      </div>
+      <h2 class="font-headline-md text-headline-md">条目标题</h2>
+    </div>
+    <p class="font-body-md text-body-md text-on-surface-variant">描述文本，最多2行。</p>
+  </article>
+  <!-- 最多8个条目 (2x4) 或 6个 (3x2) -->
+</div>
+```
+
+**关键CSS**:
+```css
+.industry-icon-bg { background: linear-gradient(135deg, #0066ff 0%, #0040a4 100%); }
+```
+
+### Layout E: 数据表格 (Data Table — for comparisons, specs, scenario data)
+
+Glass-container 包裹的表格，primary 色表头，hover 行高亮。
+
+```html
+<div class="w-full glass-container rounded-xl overflow-hidden shadow-sm">
+  <table class="w-full text-left border-collapse">
+    <thead>
+      <tr class="bg-primary text-on-primary">
+        <th class="py-4 px-6 font-headline text-body-lg font-semibold">列1</th>
+        <th class="py-4 px-6 font-headline text-body-lg font-semibold">列2</th>
+        <th class="py-4 px-6 font-headline text-body-lg font-semibold">列3</th>
+        <th class="py-4 px-6 font-headline text-body-lg font-semibold">列4</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-outline-variant/20">
+      <tr class="hover:bg-primary/5 transition-colors">
+        <td class="py-3 px-6 font-semibold text-primary">行业名</td>
+        <td class="py-3 px-6 text-body-md text-on-surface-variant">场景描述</td>
+        <td class="py-3 px-6 text-body-md text-on-surface-variant">核心价值</td>
+        <td class="py-3 px-6 text-body-md font-bold text-primary italic">提效数据</td>
+      </tr>
+      <!-- 5-10行 -->
+    </tbody>
+  </table>
+</div>
+```
+
+**关键CSS**:
+```css
+.bg-mesh { background: radial-gradient(at 0% 0%, rgba(0,80,203,.05) 0px, transparent 50%),
+                   radial-gradient(at 100% 0%, rgba(0,204,249,.08) 0px, transparent 50%); }
 .glass-container { background: rgba(255,255,255,0.7); backdrop-filter: blur(32px);
                    border: 1px solid rgba(255,255,255,0.3); }
 ```
 
-**Fonts required**: Inter, Hanken Grotesk, Geist, Material Symbols Outlined
+表格行 hover 微动效: `transform: translateX(8px)`。
 
-### Layout F: Case Study (for success stories, solution demos)
+### Layout F: 场景案例 (Case Study — for success stories, solutions)
 
-Use `content-case.html` template with these placeholders:
-- `{{CASE_TITLE}}`: Case study title (italic, primary color)
-- `{{CASE_SOURCES}}`: 3 category icon cards (物流/跨境/零售 style)
-- `{{CASE_PAIN_POINTS}}`: 2 pain point cards with icon + title + description
-- `{{CASE_SOLUTION_TITLE}}`: Solution section title (e.g., "WorkBuddy 核心解法")
-- `{{CASE_SOLUTION_FLOW}}`: 3-node flow diagram (Source→Core→Knowledge Base)
-- `{{CASE_METRICS}}`: 2 metric cards (e.g., "x2", "-50%")
-- `{{CASE_REFERENCES}}`: Reference tags (e.g., "某金融服务平台")
-- `{{CASE_FOOTER_BUTTON}}`: Footer button text (e.g., "演示视频")
-- `{{LOGO_URL}}`: Logo image URL
+三区布局：顶部（需求来源3图标 + 痛点2卡片）、中部（解法流程：来源→WorkBuddy→知识库）、右侧（业务效果2指标）。
 
-**Required CSS** (include in `<style>`):
+```html
+<!-- 顶部: 需求+痛点 -->
+<div class="grid grid-cols-12 gap-6 mb-6 h-[22%]">
+  <section class="col-span-4 glass-card rounded-xl p-4 section-accent-left">
+    <!-- 3个 icon+label 来源卡片 -->
+  </section>
+  <section class="col-span-8 glass-card rounded-xl p-4 section-accent-orange">
+    <!-- 2个痛点卡片: 圆形图标+标题+描述 -->
+  </section>
+</div>
+<!-- 中部: 解法流程 + 业务效果 -->
+<div class="grid grid-cols-12 gap-6 flex-grow">
+  <section class="col-span-8 glass-card rounded-xl p-6 section-accent-left">
+    <!-- 3节点流程: 企业微信 → WorkBuddy → 知识库 -->
+  </section>
+  <section class="col-span-4 glass-card rounded-xl p-6 section-accent-green">
+    <!-- 2个指标卡片: x2, -50% -->
+  </section>
+</div>
+```
+
+**关键CSS**:
 ```css
-.glass-card { background: rgba(255,255,255,0.7); backdrop-filter: blur(32px);
-              border: 1px solid rgba(255,255,255,0.2);
-              box-shadow: 0 4px 20px rgba(0,80,203,0.05); }
-.parallelogram { clip-path: polygon(25% 0%, 100% 0%, 75% 100%, 0% 100%); }
 .section-accent-left { border-left: 4px solid #0066ff; }
 .section-accent-orange { border-left: 4px solid #ff6b35; }
 .section-accent-green { border-left: 4px solid #34a853; }
-.fill-icon { font-variation-settings: 'FILL' 1; }
 ```
 
-### Layout G: Diagonal Timeline (for history, roadmap, evolution)
+### Layout G: 水平路线图 (Horizontal Timeline — for roadmap, history, milestones)
 
-Use `content-timeline.html` template with these placeholders:
-- `{{TIMELINE_TITLE}}`: Page title (36px, gradient text)
-- `{{TIMELINE_MILESTONES}}`: Multiple milestone blocks, alternating up/down positions
-- `{{TIMELINE_SUMMARY}}`: Footer summary text
-- `{{LOGO_URL}}`: Logo image URL
+水平时间线，节点上下交替排列，dot + connect-line 连接。
 
-Each milestone block uses:
-- `{{M_DATE}}`, `{{M_TITLE}}`, `{{M_DESC}}`, `{{M_COLOR}}`, `{{M_STAR}}`,
-  `{{M_LEFT}}`, `{{M_HEIGHT}}`, `{{M_OFFSET}}`, `{{M_POS}}` (detail in template comments)
+```html
+<main class="flex-grow flex items-center relative w-full px-12">
+  <div class="timeline-line"></div>
+  <div class="flex justify-between w-full relative z-10">
+    <!-- 上方节点 -->
+    <div class="relative flex flex-col items-center">
+      <div class="absolute bottom-12 w-64 mb-8">
+        <h3 class="font-headline-md text-headline-md text-primary">年份</h3>
+        <p class="font-body-md text-on-surface-variant">描述</p>
+      </div>
+      <div class="connect-line-top"></div>
+      <div class="dot"></div>
+    </div>
+    <!-- spacer dots -->
+    <!-- 下方节点 -->
+    <div class="relative flex flex-col items-center">
+      <div class="dot"></div>
+      <div class="connect-line-bottom"></div>
+      <div class="absolute top-12 w-64 mt-8">
+        <h3 class="font-headline-md text-headline-md text-primary">年份</h3>
+        <p class="font-body-md text-on-surface-variant">描述</p>
+      </div>
+    </div>
+  </div>
+</main>
+```
 
-**Required CSS** (include in `<style>`):
+**关键CSS**:
 ```css
-.canvas-16-9 { aspect-ratio: 16/9; width: 100vw; max-height: 100vh; margin: auto;
-               position: relative; overflow: hidden; }
-.timeline-line { position: absolute; bottom: 25%; left: 5%; width: 90%; height: 4px;
-                 background: #00ccf9; transform: rotate(-25deg);
-                 transform-origin: left bottom; z-index: 1; }
-.milestone-marker { position: absolute; width: 12px; height: 12px;
-                    background: #00ccf9; border-radius: 50%;
-                    transform: translate(-50%,-50%); z-index: 2; }
-.connector-line { position: absolute; width: 1px;
-                  border-left: 1px dashed #727687; z-index: 1; }
-.info-card { position: absolute; width: 260px; transform: translateX(-50%); z-index: 3; }
+.timeline-line { height: 1px; background: #00ccf9; width: 100%; position: absolute; top: 50%; }
+.dot { width: 24px; height: 24px; background: #0050cb; border-radius: 50%; z-index: 10; }
+.connect-line-top { width: 1px; height: 120px; background: #00ccf9; position: absolute; bottom: 24px; left: 50%; }
+.connect-line-bottom { width: 1px; height: 120px; background: #00ccf9; position: absolute; top: 24px; left: 50%; }
 ```
 
-**Milestone positioning pattern** (alternate to avoid overlap):
-- Milestone 1: UP, left:8%, height:h-24, offset:bottom-28
-- Milestone 2: UP, left:24%, height:h-32, offset:bottom-36
-- Milestone 3: DOWN, left:34%, height:h-20, offset:top-24
-- Continue alternating, ~10-12% spacing between markers
-- UP milestones use `bottom-[6px]` for connector; DOWN use `top:[6px]`
+**规则**: 节点上下交替，首节点在上方，每2-3个节点间插入 spacer dots。每页最多8-10个里程碑。
+
+### Layout H: 增长曲线 (Growth Timeline — for growth stories, evolution, trend)
+
+SVG 趋势线 + 绝对定位里程碑节点的增长可视化。
+
+```html
+<main class="flex-grow relative px-margin-desktop">
+  <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 1600 800">
+    <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0066ff"/>
+      <stop offset="100%" stop-color="#00ccf9"/>
+    </linearGradient>
+    <path class="timeline-path" d="M 50,600 L ... L 1500,100" fill="none"
+          stroke="url(#lineGrad)" stroke-width="4" stroke-linecap="round"/>
+  </svg>
+  <div class="absolute inset-0 w-full h-full">
+    <!-- 绝对定位里程碑: 日期 + 描述 + dot -->
+    <div class="absolute" style="left: 5%; top: 58%;">
+      <span class="text-primary mb-1">1998.11</span>
+      <p class="font-semibold">里程碑事件</p>
+      <div class="w-3 h-3 bg-primary rounded-full milestone-node"></div>
+    </div>
+    <!-- 8-12个里程碑沿SVG路径分布 -->
+  </div>
+</main>
+```
+
+**关键CSS**: milestone-node hover 放大 (`transform: scale(1.4)`), SVG 路径动画 (`stroke-dasharray/dashoffset`)。
+
+### Layout I: 架构图 (Architecture — for product matrix, tech stack, layered structure)
+
+分层架构展示，左侧竖排标签 + 右侧多层颜色区分区块。
+
+```html
+<main class="flex-1 flex gap-2 px-8 pb-8 min-h-0">
+  <div class="w-12 flex flex-col gap-2 shrink-0">
+    <div class="flex-1 bg-blue-50 border border-blue-200 rounded flex items-center justify-center">
+      <span class="vertical-text text-primary font-bold text-sm">解决方案</span>
+    </div>
+    <div class="h-[45%] bg-blue-50 border border-blue-200 rounded flex items-center justify-center">
+      <span class="vertical-text text-primary font-bold text-sm">通用产品</span>
+    </div>
+  </div>
+  <div class="flex-1 flex flex-col gap-3 min-h-0">
+    <!-- 每层: 颜色头部 + 网格子项 -->
+    <div class="flex-1 border-2 border-tier-solutions flex flex-col rounded-sm overflow-hidden">
+      <div class="bg-tier-solutions text-white text-center py-1.5 text-lg font-bold">层名称</div>
+      <div class="flex-1 grid grid-cols-3 divide-x bg-white p-4"><!-- 子项 --></div>
+    </div>
+  </div>
+</main>
+```
+
+**颜色变量**: tier-solutions `#00b5d1`, tier-paas `#0066ff`, tier-iaas `#0052cc`。
+
+**关键CSS**:
+```css
+.vertical-text { writing-mode: vertical-rl; text-orientation: mixed; }
+```
+
+### Layout J: 图文并茂 (Hub & Spokes — for team intros, expert networks, capability showcase)
+
+中心盾牌图标 + 环形关键词 + 左右各3个"头像+文字"节点，底部成果展示。
+
+```html
+<div class="flex-grow relative flex items-center justify-center">
+  <!-- 中心盾牌 + 虚线圆 -->
+  <div class="relative w-48 h-48 flex flex-col items-center justify-center z-10">
+    <div class="central-circle-dashed"></div>
+    <div class="bg-white rounded-full p-6 shadow-lg border border-blue-100">
+      <svg><!-- 盾牌图标 --></svg>
+    </div>
+    <span class="absolute -top-6 text-[11px] text-gray-500">连接</span>
+    <span class="absolute -bottom-24 text-center">
+      <p class="text-2xl font-bold">3500+安全专家</p>
+    </span>
+  </div>
+  <!-- 左/右两侧人物节点 -->
+  <div class="absolute left-0 w-1/3 h-full"><!-- 3个右对齐头像+描述 --></div>
+  <div class="absolute right-0 w-1/3 h-full"><!-- 3个左对齐头像+描述 --></div>
+</div>
+<!-- 底部成果网格: 3列 -->
+<footer class="grid grid-cols-3 gap-0 border-t">
+  <div class="pr-8 border-r"><!-- 里程碑 --></div>
+  <div class="px-8 border-r"><!-- 奖项 --></div>
+  <div class="pl-8"><!-- 漏洞 --></div>
+</footer>
+```
+
+**关键CSS**: skew-banner (`transform: skewX(-20deg)`), expert-photo (`w-16 h-16 rounded-full`), central-circle-dashed (`border: 1px dashed #0066ff; border-radius: 50%`)。
 
 ## Content Searching Best Practices
 
@@ -527,13 +743,16 @@ Choose the right content layout based on the information type:
 
 | Information Type | Recommended Layout | Why |
 |-----------------|-------------------|-----|
-| Features, benefits, value props | Layout A (Cards) | Cards emphasize distinct items visually |
-| Step-by-step, ordered items | Layout B (Numbered List) | Numbers convey sequence |
-| Overview + detail split | Layout C (Two-Column) | Asymmetric balance for depth |
-| Categories, product types | Layout D (2x2 Grid) | Equal visual weight, icon-driven |
-| Comparisons, specs, industry data | Layout E (Table) | Rows allow scanning across dimensions |
-| Success stories, solutions, scenarios | Layout F (Case Study) | Pain→Solution→Impact narrative arc |
-| History, roadmap, milestones, evolution | Layout G (Timeline) | Time progression, forward momentum |
+| Advantages, features, value props | Layout A (Cards) | 3-col gradient cards with icon+description |
+| Steps, key points, bullet points | Layout B (List) | Numbered circles convey sequence |
+| Overview + detail split | Layout C (Two-Column) | Asymmetric left text + right grid |
+| Industries, categories, product matrix | Layout D (Grid) | 2x4 or 3x2 icon-driven equal-weight grid |
+| Scenario data, industry comparisons | Layout E (Table) | Rows scan across dimensions, metrics highlight |
+| Success stories, solution demos | Layout F (Case) | Pain→Solution→Impact narrative arc |
+| Roadmap, milestones, process history | Layout G (Timeline) | Alternating up/down nodes, clear time axis |
+| Growth stories, evolution, trend data | Layout H (Growth) | SVG curve + positioned milestones, dramatic arc |
+| Product matrix, tech stack, hierarchy | Layout I (Architecture) | Layered tiers with vertical labels, color-coded |
+| Team intro, expert network, capability showcase | Layout J (Expert) | Center hub + radiating nodes, profile cards |
 
 ## Quality Checklist
 
@@ -550,9 +769,6 @@ Before delivering, verify:
 - [ ] Glassmorphism effects applied correctly (backdrop-filter, semi-transparent borders)
 - [ ] Cover has diagonal blue overlay; right-side has image (AI-generated or default 腾讯滨海大厦)
 - [ ] Ending has solid blue background
-- [ ] For Layout E (Table): required CSS (.bg-mesh, .parallelogram, .glass-container) is included
-- [ ] For Layout F (Case Study): .section-accent-* CSS, Material Symbols font loaded
-- [ ] For Layout G (Timeline): .canvas-16-9, .timeline-* CSS all present; milestones alternate up/down
 
 **Corporate theme checks:**
 - [ ] Left blue bar: 17px, `#006DFF`, full height on every slide
@@ -567,3 +783,16 @@ Before delivering, verify:
 **Both themes:**
 - [ ] No content overflow (each slide has `overflow:hidden`, max 4 items per slide)
 - [ ] Numbered list items use `flex items-start` (NOT `items-center`) for multiline text
+- [ ] **Every content slide uses the correct template mapped to its content type** (see Layout Selection Guide below)
+
+**Layout-specific checks (Fluid Intelligence only):**
+- [ ] Layout A (Cards): 3 columns, `.card-header-gradient` CSS present, `.glass-card` defined
+- [ ] Layout B (List): Numbered circles with `.bg-product-orange`, max 4 items, text max 2 lines
+- [ ] Layout C (Two-Column): 12-col grid, left `.col-span-7` + right `.col-span-5`
+- [ ] Layout D (Grid): `.industry-icon-bg` gradient CSS present, max 8 items (2x4)
+- [ ] Layout E (Table): `.bg-mesh`, `.glass-container` CSS present; table has 4-5 columns, 5-10 rows
+- [ ] Layout F (Case): `.section-accent-*` CSS present; 3-zone layout (sources/pain → flow → metrics)
+- [ ] Layout G (Timeline): `.timeline-line`, `.dot`, `.connect-line-*` CSS present; nodes alternate up/down
+- [ ] Layout H (Growth): SVG viewBox `0 0 1600 800`, `linearGradient` defined, `.milestone-node` hover style
+- [ ] Layout I (Architecture): `.vertical-text` CSS present, 2-3 tier colors defined, left labels + right tier blocks
+- [ ] Layout J (Expert): `.central-circle-dashed`, `.expert-photo` CSS present; nodes on both sides of center
