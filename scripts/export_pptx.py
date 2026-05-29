@@ -1,28 +1,35 @@
 #!/usr/bin/env python3
 """
-PPTX & PDF Export Script — Playwright Screenshot-Driven (v4.0)
-==============================================================
-Pixel-perfect export: opens the HTML in headless Chromium, captures
-each <section class="slide"> as a 2x retina screenshot, and embeds
-the images as full-slide backgrounds in PPTX + PDF.
+PPTX & PDF Export Script — Full-Screen Browser Screenshot-Driven (v5.0)
+========================================================================
+Pixel-perfect export: opens the HTML in headless Chromium **full-screen mode**,
+captures each <section class="slide"> as a 2x retina screenshot at the full viewport,
+and embeds the images as full-slide backgrounds in PPTX + PDF.
+
+Full-screen mode means the browser launches with --start-fullscreen, taking the
+entire 1920×1080 viewport (standard Full HD) without any browser chrome — exactly
+what a user sees when pressing F11 in a real browser. Since headless Chromium has
+no OS-level window chrome, the viewport IS the full screen.
 
 Usage:
     python export_pptx.py <input_html> <output_file>
 
     Output format is detected from extension:
         .pptx  → PowerPoint
-        .pdf   → PDF (uses Playwright's built-in PDF generator)
+        .pdf   → PDF (each page = full-screen slide screenshot)
 
 Dependencies:
     playwright, python-pptx, Pillow
 
 Architecture:
-    1. Launch headless Chromium via Playwright
+    1. Launch headless Chromium in full-screen mode (--start-fullscreen)
     2. Set viewport to 1920×1080 @2x device scale factor (3840×2160 capture)
+       — this IS the full-screen content area, identical to F11 browser mode
     3. Use JS to cycle through slide sections, making each active
-    4. Screenshot each slide as a full-viewport PNG
-    5. PPTX: embed each PNG as a full-slide background image
-    6. PDF:  use Playwright's page.pdf() per slide → merged PDF
+    4. Screenshot each slide as a full-viewport PNG (full_page=False = viewport-only,
+       which equals full-screen since each slide fills 100vh/100vw)
+    5. PPTX: embed each PNG as a full-slide background image (16:9, 13.333"×7.5")
+    6. PDF:  stitch screenshots into multi-page PDF, 150dpi
 """
 
 import sys
@@ -53,15 +60,23 @@ def capture_slides(html_path: str) -> list[bytes]:
     file_url = abs_html.as_uri()
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        browser = p.chromium.launch(
+            headless=True,
+            args=["--start-fullscreen"],  # full-screen browser mode (F11 equivalent)
+        )
         context = browser.new_context(
             viewport={"width": 1920, "height": 1080},
-            device_scale_factor=2,  # retina-quality captures
+            # ^ 1920×1080 IS the full-screen content area.
+            #   In headless Chromium there is no OS window chrome
+            #   (title bar, tabs, address bar), so the viewport
+            #   equals the full screen. Combined with --start-fullscreen,
+            #   this is pixel-identical to F11 full-screen mode.
+            device_scale_factor=2,  # retina-quality captures → 3840×2160 PNG
         )
         page = context.new_page()
 
         # Navigate to HTML
-        print(f"Loading: {file_url}")
+        print(f"Loading (full-screen mode): {file_url}")
         page.goto(file_url, wait_until="networkidle", timeout=60000)
 
         # Wait for Tailwind CDN + fonts
@@ -92,7 +107,8 @@ def capture_slides(html_path: str) -> list[bytes]:
             # Let CSS transition settle
             page.wait_for_timeout(400)
 
-            # Screenshot the full viewport
+            # Screenshot the full viewport (full_page=False = capture only the
+            # visible 1920×1080 area, which IS the full-screen browser view)
             png_bytes = page.screenshot(full_page=False, type="png")
             screenshots.append(png_bytes)
             print(f"  Slide {i + 1}/{slide_count} captured ({len(png_bytes) / 1024:.0f} KB)")

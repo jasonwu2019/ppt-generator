@@ -2,7 +2,7 @@
 
 基于 Fluid Intelligence 设计系统的 HTML 演示文稿生成器：玻璃拟态、Electric Blue 主色、12 种页面布局（Layout A-L）。
 
-> 🎯 为 WorkBuddy 定制的 ppt-generator Skill | 版本 v3.14
+> 🎯 为 WorkBuddy 定制的 ppt-generator Skill | 版本 v3.15
 
 ## ✨ 特性
 
@@ -11,7 +11,7 @@
 - **全屏 16:9**：基于 vh/vw 响应式布局，禁止滚动，键盘/滚轮翻页
 - **AI 内容生成**：无内容时自动 WebSearch + AI 总结生成幻灯片
 - **封面图自动兜底**：AI 生图失败时使用默认装饰图（硅谷科技楼），绝不空白
-- **📸 像素级 PPTX/PDF 导出**：Playwright 截图驱动，3840×2160 视网膜质量，导出效果与 HTML 完全一致
+- **📸 像素级 PPTX/PDF 导出**：Playwright 全屏浏览器截图驱动（`--start-fullscreen`，F11 等效），3840×2160 视网膜质量，导出效果与浏览器全屏访问完全一致
 - **Glassmorphism 设计**：毛玻璃卡片 + 渐变叠加 + 微阴影层次
 - **视觉多样性规则**：禁止连续 3 张同布局，图文并茂比例 ≥ 40%，稀疏内容自动合并
 
@@ -100,6 +100,7 @@ python scripts/export_pptx.py your-presentation.html
 
 | 版本 | 日期 | 更新内容 |
 |------|------|----------|
+| v3.15 | 2026-05-29 | **全屏浏览器截图**：导出引擎添加 `--start-fullscreen`（F11 等效），确保截图与浏览器全屏访问完全一致 |
 | v3.14 | 2026-05-29 | **导出引擎重写**: Playwright 截图驱动替代文本提取，PPTX/PDF 与 HTML 像素一致；3840x2160 视网膜质量 |
 | v3.13 | 2026-05-29 | 新增 2 个文本模板：行业网格（Layout K）+ 产品介绍（Layout L）；升级到 12 种 Layout |
 | v3.12 | 2026-05-29 | 修复时间轴连接线消失：calc() 运算符两侧添加空格（CSS 规范要求） |
