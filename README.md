@@ -66,7 +66,7 @@ ppt-generator/
 │   ├── slide-engine.js               # 翻页导航引擎
 │   └── cover-default-hero.jpg        # 默认封面装饰图（硅谷科技楼）
 ├── scripts/
-│   └── export_pptx.py                # PPTX/PDF 导出（Playwright 截图驱动 v4.0）
+│   └── export_pptx.py                # PPTX/PDF 导出（Playwright 原生分辨率截图 v9.0）
 └── references/
     └── design_system.md              # 完整设计规范
 ```
