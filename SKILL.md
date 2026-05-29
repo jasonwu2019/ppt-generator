@@ -1,6 +1,6 @@
 ---
 name: ppt-generator
-version: "3.6"
+version: "3.7"
 description: "HTML-based presentation slide generator using the Fluid Intelligence design system — glassmorphism, Electric Blue, immersive 16:9 with 10 Layout A-J templates. Generates full-screen HTML slides with keyboard/scroll navigation and optional PPTX export. v3.5 simplified to single-theme Fluid Intelligence."
 agent_created: true
 ---
@@ -91,18 +91,12 @@ If the user only gave a topic name without specific content:
    - Common use cases or applications
 
 2. **Summarize findings** into a structured outline:
-   - 1 cover slide: Title + subtitle + right-side hero image (generate if topic is visual)
+   - 1 cover slide: Title + subtitle + right-side hero image (fixed: 腾讯滨海大厦)
    - 1 TOC slide: 4-10 key sections
    - 3-N content slides: One per TOC section, with bullet points, cards, or data
    - 1 ending slide: Thank you / Q&A
 
-3. **Generate cover image** (when the topic is visual/has a physical subject):
-   - Use ImageGen to generate a relevant transparent-background hero image
-   - Then use rembg to remove background + PIL to crop watermarks
-   - Save as `cover-hero.png` in workspace, reference as `{{COVER_IMAGE_URL}}`
-   - If topic is abstract or ImageGen fails: skip, use the default building image (see Step 4)
-
-4. **Verify completeness**: Ensure every TOC item has a corresponding content slide.
+3. **Verify completeness**: Ensure every TOC item has a corresponding content slide.
 
 ### Step 3: Plan Slide Structure
 
@@ -256,24 +250,9 @@ Additional CSS for Layout F/G — see each template's Layout reference section f
 .slide.below { transform: translateY(100vh); }
 ```
 
-## Cover Image Generation
+## Cover Image
 
-When the PPT topic is visual (product, technology, vehicle, building, device etc.), generate a cover hero image for the right-side white area:
-
-1. **Use ImageGen** to generate a topic-relevant image (e.g., "a futuristic AI agent dashboard, clean minimalist style")
-2. **Remove background** with rembg:
-   ```python
-   from rembg import remove
-   from PIL import Image
-   img = Image.open('cover-raw.png')
-   result = remove(img)
-   result.save('cover-hero.png', 'PNG')
-   ```
-3. **Crop watermark**: If the generated image has "图片由AI生成" text at bottom, crop bottom 6% with PIL.
-4. **Set in cover template**: `{{COVER_IMAGE_URL}}` = `cover-hero.png`, `{{COVER_IMAGE_ALT}}` = topic description.
-5. If no image is generated, set both to empty string `""`.
-
-**Skip cover image generation when**: topic is abstract (theory, methodology, software architecture, management concepts), ImageGen fails, or user explicitly says no images. When skipped, copy `assets/cover-default-hero.jpg` (腾讯滨海大厦) to the workspace as `cover-hero.png` — the cover always has a real image, never blank.
+封面右侧永远使用默认图片。在 Step 4 生成 HTML 之前，将 `assets/cover-default-hero.jpg`（腾讯滨海大厦）复制到 workspace 并设为 `{{COVER_IMAGE_URL}}`，`{{COVER_IMAGE_ALT}}` 设为 "腾讯滨海大厦"。不进行 AI 图片生成。
 
 ### Step 5: Deliver the HTML
 
@@ -710,7 +689,7 @@ Before delivering, verify:
 **Design system checks:**
 - [ ] Colors match the design system (Electric Blue primary)
 - [ ] Glassmorphism effects applied correctly (backdrop-filter, semi-transparent borders)
-- [ ] Cover has diagonal blue overlay; right-side has image (AI-generated or default 腾讯滨海大厦)
+- [ ] Cover has diagonal blue overlay; right-side has 腾讯滨海大厦 default image
 - [ ] Ending has solid blue background
 - [ ] No content overflow (each slide has `overflow:hidden`, max 4 items per slide)
 - [ ] Numbered list items use `flex items-start` (NOT `items-center`) for multiline text
