@@ -1,7 +1,7 @@
 ---
 name: ppt-generator
-version: "3.13"
-description: "HTML-based presentation slide generator using the Fluid Intelligence design system — glassmorphism, Electric Blue, immersive 16:9 with 12 content templates (Layout A-L). Generates full-screen HTML slides with keyboard/scroll navigation and optional PPTX export. v3.13 adds product-intro and industry-grid templates + calc() spacing fix."
+version: "3.14"
+description: "HTML-based presentation slide generator using the Fluid Intelligence design system — glassmorphism, Electric Blue, immersive 16:9 with 12 content templates (Layout A-L). Generates full-screen HTML slides with keyboard/scroll navigation and pixel-perfect PPTX/PDF export via Playwright. v3.14 replaces text-extraction export with screenshot-driven export for 100% visual fidelity."
 agent_created: true
 ---
 
@@ -278,23 +278,33 @@ Additional CSS for Layout F/G — see each template's Layout reference section f
 2. **Preview** using `preview_url` with the absolute file path
 3. Tell the user: arrow keys or scroll to navigate, or click the nav dots
 
-### Step 6: PPTX Export (optional, only if user requests .pptx)
+### Step 6: PPTX / PDF Export (only if user requests .pptx or .pdf)
 
-If the user explicitly asks for PPTX format or says "生成PPT文件":
+**Architecture (v3.14)**: Playwright screenshot-driven export. Opens the HTML in headless Chromium, captures each `<section class="slide">` as a retina-quality (3840×2160) screenshot, and embeds the image as a full-slide background. This guarantees the exported file is **pixel-identical** to the HTML page.
 
-1. Ensure `python-pptx` is installed in the managed Python environment:
+**Prerequisites** (install once per environment):
+
+1. Ensure `playwright` + `python-pptx` + `Pillow` are installed:
    ```bash
-   C:\Users\Administrator\.workbuddy\binaries\python\envs\default\bin\pip install python-pptx Pillow
+   "C:/Users/Administrator/.workbuddy/binaries/python/envs/default/Scripts/pip.exe" install playwright python-pptx Pillow
+   "C:/Users/Administrator/.workbuddy/binaries/python/envs/default/Scripts/python.exe" -m playwright install chromium
    ```
+   If already installed, skip this step.
 
-2. Read and run `scripts/export_pptx.py`, passing:
-   - The generated HTML file path
-   - The output PPTX file path
+2. Run the export script:
+   ```bash
+   "C:/Users/Administrator/.workbuddy/binaries/python/envs/default/Scripts/python.exe" "<SKILL_DIR>/scripts/export_pptx.py" "<generated_html>" "<output>"
+   ```
+   - `<output>` extension determines format: `.pptx` → PowerPoint, `.pdf` → PDF
 
-3. The script converts each slide section into a PPTX slide, preserving text content
-   and basic layout structure.
+3. Deliver the file to the user via `deliver_attachments`.
 
-4. Deliver the PPTX file to the user.
+**How it works**:
+- Opens the HTML in headless Chromium (1920×1080 viewport @2x = 3840×2160 captures)
+- Cycles through slides via JS (sets `.active` class, others `.above`/`.below`)
+- Screenshots each slide as PNG → embedded as full-slide image
+- PPTX: 16:9 (13.333"×7.5"), each slide = one screenshot filling the entire slide
+- PDF: multi-page, each page = one screenshot, 150dpi
 
 ## Content Page Layouts Reference
 
