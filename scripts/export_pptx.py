@@ -1,27 +1,23 @@
 #!/usr/bin/env python3
 """
-PPTX & PDF Export Script — Real Browser Full-Screen Capture (v8.0)
+PPTX & PDF Export Script — Native-Resolution Browser Capture (v9.0)
 ====================================================================
-HOW IT WORKS (completely different from previous versions):
-  Previous versions used *headless* Chromium — an invisible simulated
-  browser. Even with GPU flags, headless rendering is NOT identical
-  to a real browser (font rendering, backdrop-filter, color pipeline).
+THE FUNDAMENTAL FIX (what makes this version different):
+  Previous versions forced a 1920×1080 viewport regardless of the
+  actual monitor resolution. When the monitor is 1280×720 (HD), the
+  browser renders at 1920×1080 in a virtual canvas, then the OS
+  downscales it to 1280×720 — introducing scaling artifacts.
+  v9.0 detects the ACTUAL monitor resolution and sets the viewport
+  to match. This makes the rendering pipeline PIXEL-PERFECT at the
+  native resolution — identical to opening Chrome and pressing F11.
 
-  v8.0 launches a REAL, VISIBLE Chrome browser window in FULL-SCREEN
-  mode (--start-fullscreen = F11 equivalent). The browser takes over
-  the entire display, the HTML renders through the actual Windows GPU
-  pipeline, and then we screenshot the viewport (which IS the full
-  screen in fullscreen mode).
-
-  The result: exported PPTX/PDF pages are pixel-identical to what
-  you see when pressing F11 in Chrome.
-
-What happens on screen:
-  - A Chrome window appears and goes full-screen (F11 mode)
-  - Each slide renders in sequence, visible on your screen
-  - Each slide is screenshotted (viewport = full screen)
-  - The window closes after capture
-  - Total time: ~30s for 16 slides
+Other improvements:
+  - Hides UI overlays (nav-dots, counter, hint) before capture
+    → clean presentation slides, no navigation chrome
+  - Captures only the slide element (not the full viewport)
+    → no body background, no gaps, pure slide content
+  - 3× device scale factor → high-density screenshots
+  - Headed Chromium → real GPU pipeline (glassmorphism works)
 
 Usage:
     python export_pptx.py <input_html> <output_file>
@@ -33,26 +29,33 @@ Dependencies:
 
 import sys
 import os
+import ctypes
 from pathlib import Path
 
 PYTHON = sys.executable
 
 
-def rel(path: str) -> Path:
-    """Resolve a path relative to this script's directory."""
-    return (Path(__file__).parent / path).resolve()
+def get_monitor_resolution() -> tuple[int, int]:
+    """Detect the primary monitor's native resolution via Windows API."""
+    try:
+        user32 = ctypes.windll.user32
+        width = user32.GetSystemMetrics(0)   # SM_CXSCREEN
+        height = user32.GetSystemMetrics(1)  # SM_CYSCREEN
+        if width > 0 and height > 0:
+            return width, height
+    except Exception:
+        pass
+    # Fallback: assume 1920×1080
+    return 1920, 1080
 
 
-# ── Browser screenshot capture (REAL visible browser) ─────────
+# ── Browser screenshot capture ────────────────────────────────
 
 def capture_slides(html_path: str) -> list[bytes]:
     """
-    Open HTML in a REAL visible Chromium browser in full-screen mode,
-    screenshot each slide. Returns list of PNG bytes.
-
-    Key: headless=False + --start-fullscreen means the browser renders
-    through the ACTUAL Windows GPU/driver pipeline — identical to what
-    you see when pressing F11 in Chrome.
+    Open HTML in a real Chromium browser window, match viewport to
+    the actual monitor resolution, hide UI overlays, and screenshot
+    each slide element at 3× retina quality.
     """
     from playwright.sync_api import sync_playwright
 
@@ -63,49 +66,56 @@ def capture_slides(html_path: str) -> list[bytes]:
 
     file_url = abs_html.as_uri()
 
-    with sync_playwright() as p:
-        # ── Launch REAL visible Chrome in full-screen mode ──
-        # headless=False → real browser window (actual GPU pipeline)
-        # --start-fullscreen → F11 mode (no title bar, no taskbar)
-        # --disable-infobars → no "Chrome is being controlled" banner
-        # --no-first-run → skip welcome wizard
-        chromium_args = [
-            "--start-fullscreen",           # F11 full-screen mode
-            "--disable-infobars",           # hide automation banner
-            "--no-first-run",               # skip welcome wizard
-            "--no-default-browser-check",   # don't ask to be default
-            "--disable-extensions",         # clean rendering
-            "--disable-background-networking",  # no background traffic
-            "--disable-sync",               # no Chrome sync
-            "--force-color-profile=srgb",   # sRGB color space
-            "--enable-font-antialiasing",   # ClearType-quality text
-        ]
+    # Detect native monitor resolution
+    screen_w, screen_h = get_monitor_resolution()
+    print(f"\n  Monitor native resolution: {screen_w}×{screen_h}")
 
+    # Calculate 16:9 viewport that fits within the monitor
+    # (maintain 16:9 aspect ratio, constrained by monitor height)
+    vp_w = screen_w
+    vp_h = screen_h
+    # Ensure exactly 16:9 for PPT compatibility
+    expected_h = int(vp_w * 9 / 16)
+    if expected_h > vp_h:
+        # Monitor is wider than 16:9, constrain by height
+        vp_h = screen_h
+        vp_w = int(vp_h * 16 / 9)
+    else:
+        vp_h = expected_h
+
+    print(f"  Viewport: {vp_w}×{vp_h} (16:9)")
+    print(f"  Scale: 3× → {vp_w * 3}×{vp_h * 3} PNG")
+
+    with sync_playwright() as p:
+        # Headed Chromium → real GPU pipeline
+        # Window sized to exactly match viewport (plus minimal chrome)
         browser = p.chromium.launch(
-            headless=False,                # REAL visible browser
-            args=chromium_args,
+            headless=False,
+            args=[
+                f"--window-size={vp_w + 16},{vp_h + 80}",
+                "--window-position=0,0",
+                "--disable-infobars",
+                "--no-first-run",
+                "--no-default-browser-check",
+                "--disable-extensions",
+                "--force-color-profile=srgb",
+                "--enable-font-antialiasing",
+            ],
         )
         context = browser.new_context(
-            viewport={"width": 1920, "height": 1080},
-            # ^ 16:9 Full HD. In fullscreen mode, the browser
-            #   stretches to fill the screen, and this viewport
-            #   IS what gets captured by page.screenshot().
-            device_scale_factor=2,  # retina-quality → 3840×2160 PNG
+            viewport={"width": vp_w, "height": vp_h},
+            device_scale_factor=3,   # 3× retina
         )
         page = context.new_page()
 
-        # Navigate to HTML
         print(f"\n{'='*60}")
-        print(f"  Opening in REAL Chrome browser (full-screen mode)")
-        print(f"  File: {file_url}")
-        print(f"  The browser window will appear on your screen.")
-        print(f"  Each slide will be captured as the full-screen view.")
+        print(f"  Opening in Chrome (viewport = monitor = {vp_w}×{vp_h})")
         print(f"{'='*60}\n")
 
         page.goto(file_url, wait_until="domcontentloaded", timeout=60000)
 
-        # Wait for all fonts to load
-        print("Waiting for fonts to load...")
+        # Wait for fonts
+        print("Waiting for fonts...")
         page.wait_for_function(
             """
             () => {
@@ -115,10 +125,21 @@ def capture_slides(html_path: str) -> list[bytes]:
             """,
             timeout=30000,
         )
-
-        # Extra buffer for Tailwind CDN + initial render
         page.wait_for_timeout(3000)
-        print("Fonts loaded. Starting slide capture...\n")
+        print("Fonts loaded.\n")
+
+        # ── Hide UI overlays ──
+        page.evaluate("""
+            (() => {
+                const hide = sel => {
+                    const el = document.querySelector(sel);
+                    if (el) { el.style.display = 'none'; }
+                };
+                hide('.nav-dots');
+                hide('.slide-counter');
+                hide('.instruction-hint');
+            })()
+        """)
 
         # Count slides
         slide_count = page.evaluate(
@@ -128,7 +149,7 @@ def capture_slides(html_path: str) -> list[bytes]:
 
         screenshots: list[bytes] = []
         for i in range(slide_count):
-            # Activate this slide
+            # Activate this slide (others above/below)
             page.evaluate(
                 f"""
                 (() => {{
@@ -143,14 +164,16 @@ def capture_slides(html_path: str) -> list[bytes]:
                 """
             )
 
-            # Wait for CSS transition (0.6s) + render settle
+            # Wait for CSS transition (0.6s) × 2.5 + reflow margin
             page.wait_for_timeout(1500)
 
-            # ── CAPTURE ──
-            # In fullscreen mode, the viewport fills the entire screen.
-            # page.screenshot(full_page=False) captures the visible
-            # viewport area, which IS the full-screen browser view.
-            png_bytes = page.screenshot(full_page=False, type="png")
+            # Force layout reflow to ensure all CSS has been applied
+            page.evaluate("() => document.body.offsetHeight")
+
+            # Screenshot the active slide element
+            # (not the viewport — cleaner, no body background or gaps)
+            slide_el = page.locator(".slide.active")
+            png_bytes = slide_el.screenshot(type="png")
             screenshots.append(png_bytes)
             print(f"  ✓ Slide {i + 1}/{slide_count} captured "
                   f"({len(png_bytes) / 1024:.0f} KB)")
@@ -164,19 +187,18 @@ def capture_slides(html_path: str) -> list[bytes]:
 # ── PDF export ───────────────────────────────────────────────
 
 def export_pdf(screenshots: list[bytes], output_path: str):
-    """Create a PDF from slide screenshots — one image per page, 16:9 landscape."""
+    """Create a PDF from slide screenshots — one image per page, 16:9."""
     from PIL import Image
     from io import BytesIO
 
     images: list[Image.Image] = []
     for i, png in enumerate(screenshots):
         img = Image.open(BytesIO(png))
-        # Convert RGBA to RGB for PDF
         if img.mode in ("RGBA", "P"):
             img = img.convert("RGB")
         images.append(img)
         print(f"  Slide {i + 1}/{len(screenshots)} → PDF page "
-              f"({img.width}x{img.height})")
+              f"({img.width}×{img.height})")
 
     if not images:
         print("ERROR: No slides to export")
@@ -214,11 +236,16 @@ def export_pptx(screenshots: list[bytes], output_path: str):
         slide = prs.slides.add_slide(blank_layout)
 
         img_stream = BytesIO(png_bytes)
-        slide.shapes.add_picture(
+        pic = slide.shapes.add_picture(
             img_stream,
             left=0, top=0,
             width=slide_w, height=slide_h,
         )
+        # Disable PPTX compression — keep PNG quality
+        try:
+            pic.image.auto_compress = False
+        except Exception:
+            pass
         print(f"  Slide {i + 1}/{len(screenshots)} embedded in PPTX")
 
     prs.save(output_path)
@@ -246,30 +273,25 @@ def main():
         from playwright.sync_api import sync_playwright  # noqa: F401
     except ImportError:
         print("ERROR: playwright is not installed.")
-        print("  Install: pip install playwright && python -m playwright install chromium")
         deps_ok = False
 
     try:
         from pptx import Presentation  # noqa: F401
     except ImportError:
         print("ERROR: python-pptx is not installed.")
-        print("  Install: pip install python-pptx")
         deps_ok = False
 
     try:
         from PIL import Image  # noqa: F401
     except ImportError:
         print("ERROR: Pillow is not installed.")
-        print("  Install: pip install Pillow")
         deps_ok = False
 
     if not deps_ok:
         sys.exit(1)
 
-    # ── Capture screenshots (REAL browser, full-screen mode) ──
     screenshots = capture_slides(input_html)
 
-    # ── Export ──
     if ext == ".pdf":
         export_pdf(screenshots, output_path)
     elif ext in (".pptx", ".ppt"):

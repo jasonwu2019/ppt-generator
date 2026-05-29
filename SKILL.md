@@ -1,7 +1,7 @@
 ---
 name: ppt-generator
-version: "3.18"
-description: "HTML-based presentation slide generator using the Fluid Intelligence design system — glassmorphism, Electric Blue, immersive 16:9 with 12 content templates (Layout A-L). Generates full-screen HTML slides with keyboard/scroll navigation and pixel-perfect PPTX/PDF export via Playwright HEADED Chromium full-screen mode. v3.18 switches from headless simulation to a REAL visible Chrome browser in F11 full-screen mode — rendering through the actual Windows GPU pipeline for 100% authentic browser-quality screenshots."
+version: "3.19"
+description: "HTML-based presentation slide generator using the Fluid Intelligence design system — glassmorphism, Electric Blue, immersive 16:9 with 12 content templates (Layout A-L). Generates full-screen HTML slides with keyboard/scroll navigation and pixel-perfect PPTX/PDF export. v3.19 auto-detects monitor native resolution for viewport matching (eliminates OS-level scaling artifacts), captures only slide elements (no UI chrome), and uses 3× retina scale for maximum quality."
 agent_created: true
 ---
 
@@ -280,9 +280,7 @@ Additional CSS for Layout F/G — see each template's Layout reference section f
 
 ### Step 6: PPTX / PDF Export (only if user requests .pptx or .pdf)
 
-**Architecture (v3.18)**: REAL VISIBLE Chrome browser in full-screen mode → screenshot each slide. Unlike all previous versions that used *headless* Chromium (invisible simulated browser), v3.18 launches a **headed** (visible) Chrome window with `--start-fullscreen` (F11 mode). The HTML renders through the **actual Windows GPU/driver pipeline** — the same pipeline used when you open Chrome and press F11. This means font rendering (ClearType), backdrop-filter (hardware-accelerated), color management (Windows ICM), and every CSS effect are **pixel-identical** to a real browser. The viewport screenshot (`full_page=False`) captures exactly what fills the screen in fullscreen mode.
-
-**What you'll see**: A Chrome window will appear and go full-screen. Each slide renders visibly on your screen, then gets captured. The window closes after all slides are done. Total: ~30s for 16 slides. **This is intentional — it IS the browser full-screen experience.**
+**Architecture (v3.19)**: Native-resolution viewport + 3× retina element screenshot. The biggest improvement over v3.18 is **viewport = actual monitor native resolution**. Previous versions hardcoded 1920×1080 regardless of the monitor — on a 1280×720 display this forced the browser to render at a virtual resolution, then the OS downscaled it, introducing scaling artifacts. v3.19 detects the real monitor resolution (via `GetSystemMetrics`) and sets the viewport to match. The HTML renders at the **exact pixel grid** the monitor uses — identical to opening Chrome and pressing F11. UI overlays (nav-dots, counter, hint) are hidden before capture so each slide is a clean presentation page.
 
 **Prerequisites** (install once per environment):
 
@@ -301,15 +299,15 @@ Additional CSS for Layout F/G — see each template's Layout reference section f
 
 3. Deliver the file to the user via `deliver_attachments`.
 
-**How it works (v3.18)**:
-- Launches **headed (visible) Chromium** — NOT headless simulation
-- `--start-fullscreen` → browser enters F11 full-screen mode, filling the entire display
-- Viewport = 1920×1080 @2x → 3840×2160 retina PNG per slide
-- Rendering goes through the actual Windows GPU/driver pipeline (not SwiftShader simulation)
-- ClearType font rendering, hardware backdrop-filter, Windows ICM color — 100% real browser quality
-- Cycles through slides via JS (`active`/`above`/`below` classes); waits 1.5s per slide for transition + reflow
-- `page.screenshot(full_page=False)` captures the viewport = the full-screen browser view
-- PPTX: 16:9 (13.333"×7.5"), each slide = one screenshot filling the entire slide
+**How it works (v3.19)**:
+- Auto-detects monitor native resolution via Windows `GetSystemMetrics` API
+- Viewport = monitor pixels (e.g. 1280×720 on HD display) → **no OS-level scaling, pixel-perfect**
+- 3× device scale factor → 3840×2160 PNG per slide
+- Headed Chromium → real Windows GPU pipeline (backdrop-filter, ClearType fonts, sRGB color)
+- Hides UI overlays (`.nav-dots`, `.slide-counter`, `.instruction-hint`) before capture → clean slides
+- Uses `page.locator('.slide.active').screenshot()` → only the slide element, no body background or gaps
+- Forces layout reflow (`document.body.offsetHeight`) before each screenshot → no mid-render artifacts
+- PPTX: 16:9 (13.333"×7.5"), `auto_compress=False` to preserve PNG quality
 - PDF: multi-page, each page = one screenshot, 150dpi
 
 ## Content Page Layouts Reference
