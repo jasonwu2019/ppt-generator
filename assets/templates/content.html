@@ -1,0 +1,194 @@
+<!--
+  Content Slide Templates - Fluid Intelligence Design System
+  Multiple layout patterns for content slides.
+
+  ============================================================
+  LAYOUT A: Three Glassmorphism Cards (for features, positioning, comparisons)
+  ============================================================
+  Placeholders:
+    {{CONTENT_TITLE}}    - Main heading (e.g., "产品核心能力")
+    {{CONTENT_SUBTITLE}} - Subtitle/secondary heading (e.g., "三大核心优势")
+    {{CARD1_TITLE}}      - Card 1 heading
+    {{CARD1_BODY}}       - Card 1 body text (keep to 2-3 lines)
+    {{CARD2_TITLE}}      - Card 2 heading
+    {{CARD2_BODY}}       - Card 2 body text
+    {{CARD3_TITLE}}      - Card 3 heading
+    {{CARD3_BODY}}       - Card 3 body text
+    {{CARD1_ICON_SVG}}   - SVG path data for card 1 icon (use existing or provide new)
+    {{CARD2_ICON_SVG}}   - SVG path data for card 2 icon
+    {{CARD3_ICON_SVG}}   - SVG path data for card 3 icon
+    {{CARD1_COLOR}}      - Border/accent color for card 1 (product-orange/business-blue/strategy-green)
+    {{CARD2_COLOR}}      - Border/accent color for card 2
+    {{CARD3_COLOR}}      - Border/accent color for card 3
+-->
+<!-- BEGIN: ContentSlide_LayoutA_Cards -->
+<section class="slide" data-slide-type="content-cards">
+  <main class="w-full h-screen flex flex-col p-8 lg:p-12 max-w-[1920px] mx-auto overflow-hidden">
+    <!-- Header -->
+    <header class="flex justify-between items-start mb-6 flex-shrink-0">
+      <div>
+        <div class="flex items-center gap-3 mb-1">
+          <div class="w-4 h-10 bg-tencent-blue rounded-sm -skew-x-12"></div>
+          <h1 class="text-4xl font-bold italic text-tencent-blue tracking-tight">{{CONTENT_TITLE}}</h1>
+        </div>
+        <h2 class="text-5xl font-extrabold text-tencent-blue mt-2">{{CONTENT_SUBTITLE}}</h2>
+      </div>
+      <!-- Right side (optional logo/actions) -->
+      <div class="flex items-center gap-4">
+        <span class="text-tencent-blue/40 font-medium text-sm uppercase tracking-widest">Slide {{SLIDE_NUM}}/{{TOTAL_SLIDES}}</span>
+      </div>
+    </header>
+    <!-- Three Cards -->
+    <section class="grid grid-cols-3 gap-6 flex-grow min-h-0">
+      <!-- Card 1 -->
+      <div class="relative glass-card rounded-2xl p-8 border-l-8 border-l-{{CARD1_COLOR}} card-shadow overflow-hidden">
+        <div class="absolute right-[-20px] top-[-10px] opacity-5 pointer-events-none">
+          <svg class="w-48 h-48" fill="currentColor" viewBox="0 0 24 24"><path d="{{CARD1_ICON_SVG}}"></path></svg>
+        </div>
+        <div class="flex flex-col h-full relative z-10">
+          <div class="w-12 h-12 bg-white border border-slate-100 shadow-sm rounded-lg flex items-center justify-center mb-6">
+            <svg class="w-6 h-6 text-{{CARD1_COLOR}}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="{{CARD1_ICON_SVG}}" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          </div>
+          <h3 class="text-2xl font-bold text-slate-800 mb-4 tracking-wide">{{CARD1_TITLE}}</h3>
+          <p class="text-slate-600 leading-relaxed text-lg font-medium">{{CARD1_BODY}}</p>
+        </div>
+      </div>
+      <!-- Card 2 -->
+      <div class="relative glass-card rounded-2xl p-8 border-l-8 border-l-{{CARD2_COLOR}} card-shadow overflow-hidden">
+        <div class="absolute right-[10px] top--[10px] opacity-5 pointer-events-none">
+          <svg class="w-40 h-40" fill="currentColor" viewBox="0 0 24 24"><path d="{{CARD2_ICON_SVG}}"></path></svg>
+        </div>
+        <div class="flex flex-col h-full relative z-10">
+          <div class="w-12 h-12 bg-white border border-slate-100 shadow-sm rounded-lg flex items-center justify-center mb-6">
+            <svg class="w-6 h-6 text-{{CARD2_COLOR}}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="{{CARD2_ICON_SVG}}" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          </div>
+          <h3 class="text-2xl font-bold text-slate-800 mb-4 tracking-wide">{{CARD2_TITLE}}</h3>
+          <p class="text-slate-600 leading-relaxed text-lg font-medium">{{CARD2_BODY}}</p>
+        </div>
+      </div>
+      <!-- Card 3 -->
+      <div class="relative glass-card rounded-2xl p-8 border-l-8 border-l-{{CARD3_COLOR}} card-shadow overflow-hidden">
+        <div class="absolute right-[-10px] top-[10px] opacity-5 pointer-events-none">
+          <svg class="w-44 h-44" fill="currentColor" viewBox="0 0 24 24"><path d="{{CARD3_ICON_SVG}}"></path></svg>
+        </div>
+        <div class="flex flex-col h-full relative z-10">
+          <div class="w-12 h-12 bg-white border border-slate-100 shadow-sm rounded-lg flex items-center justify-center mb-6">
+            <svg class="w-6 h-6 text-{{CARD3_COLOR}}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="{{CARD3_ICON_SVG}}" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          </div>
+          <h3 class="text-2xl font-bold text-slate-800 mb-4 tracking-wide">{{CARD3_TITLE}}</h3>
+          <p class="text-slate-600 leading-relaxed text-lg font-medium">{{CARD3_BODY}}</p>
+        </div>
+      </div>
+    </section>
+  </main>
+</section>
+<!-- END: ContentSlide_LayoutA_Cards -->
+
+<!--
+  ============================================================
+  LAYOUT B: Numbered List (for steps, key points, 核心要点)
+  ============================================================
+  Placeholders:
+    {{LIST_TITLE}}       - Section heading
+    {{LIST_ICON_SVG}}    - SVG path for the section icon
+    {{LIST_ITEMS}}       - HTML fragment for numbered items. Format:
+                          <div class="flex items-start bg-white/70 p-4 rounded-xl border border-slate-100 shadow-sm backdrop-blur-sm">
+                            <div class="w-12 h-12 rounded-full bg-product-orange text-white flex items-center justify-center font-bold text-2xl mr-6 shrink-0">1</div>
+                            <p class="text-xl text-slate-700 font-medium">TEXT HERE with <span class="text-tencent-blue font-bold italic">highlighted</span> parts. Max 2 lines per item.</p>
+                          </div>
+-->
+<!-- BEGIN: ContentSlide_LayoutB_List -->
+<section class="slide" data-slide-type="content-list">
+  <main class="w-full h-screen flex flex-col p-8 lg:p-12 max-w-[1920px] mx-auto overflow-hidden">
+    <header class="mb-6 flex-shrink-0">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-4 h-10 bg-tencent-blue rounded-sm -skew-x-12"></div>
+        <h1 class="text-4xl font-bold italic text-tencent-blue tracking-tight">{{LIST_TITLE}}</h1>
+      </div>
+    </header>
+    <div class="flex items-center gap-3 mb-4 flex-shrink-0">
+      <svg class="w-6 h-6 text-product-orange" fill="currentColor" viewBox="0 0 24 24"><path d="{{LIST_ICON_SVG}}"></path></svg>
+      <h4 class="text-2xl font-bold text-slate-800">核心要点</h4>
+    </div>
+    <div class="space-y-3 flex-grow min-h-0 overflow-y-auto">
+      {{LIST_ITEMS}}
+    </div>
+  </main>
+</section>
+<!-- END: ContentSlide_LayoutB_List -->
+
+<!--
+  ============================================================
+  LAYOUT C: Two-Column Mixed (for overview + detail cards/grid)
+  ============================================================
+  Placeholders:
+    {{MIXED_TITLE}}      - Main heading
+    {{MIXED_LEFT_TITLE}} - Left column heading
+    {{MIXED_LEFT_CONTENT}} - Left column content (HTML, can be list or paragraphs)
+    {{MIXED_RIGHT_TITLE}}  - Right column heading
+    {{MIXED_RIGHT_ITEMS}}  - Right column grid items (HTML). Format for 2x2 grid:
+                            <div class="bg-white/40 border border-white/60 rounded-xl p-6 flex flex-col items-center justify-center shadow-sm">
+                              <div class="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mb-3">
+                                <svg class="w-8 h-8 text-tencent-blue" ...>ICON</svg>
+                              </div>
+                              <span class="text-lg font-bold text-slate-700 italic">LABEL</span>
+                            </div>
+-->
+<!-- BEGIN: ContentSlide_LayoutC_Mixed -->
+<section class="slide" data-slide-type="content-mixed">
+  <main class="w-full h-screen flex flex-col p-8 lg:p-12 max-w-[1920px] mx-auto overflow-hidden">
+    <header class="mb-6 flex-shrink-0">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-4 h-10 bg-tencent-blue rounded-sm -skew-x-12"></div>
+        <h1 class="text-4xl font-bold italic text-tencent-blue tracking-tight">{{MIXED_TITLE}}</h1>
+      </div>
+    </header>
+    <section class="grid grid-cols-12 gap-10 flex-grow min-h-0">
+      <!-- Left Column (7/12) -->
+      <div class="col-span-7 flex flex-col">
+        <div class="flex items-center gap-3 mb-6">
+          <svg class="w-6 h-6 text-product-orange" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"></path></svg>
+          <h4 class="text-2xl font-bold text-slate-800">{{MIXED_LEFT_TITLE}}</h4>
+        </div>
+        <div class="space-y-4 flex-grow">
+          {{MIXED_LEFT_CONTENT}}
+        </div>
+      </div>
+      <!-- Right Column (5/12) -->
+      <div class="col-span-5 flex flex-col">
+        <div class="flex items-center gap-3 mb-6">
+          <svg class="w-6 h-6 text-tencent-blue" fill="currentColor" viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"></path></svg>
+          <h4 class="text-2xl font-bold text-slate-800">{{MIXED_RIGHT_TITLE}}</h4>
+        </div>
+        <div class="grid grid-cols-2 gap-4 flex-grow">
+          {{MIXED_RIGHT_ITEMS}}
+        </div>
+      </div>
+    </section>
+  </main>
+</section>
+<!-- END: ContentSlide_LayoutC_Mixed -->
+
+<style>
+  /* Content Slide Shared Styles */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+  .card-shadow {
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+  }
+  .tencent-blue { color: #0052d9; }
+  .bg-tencent-blue { background-color: #0052d9; }
+  .product-orange { color: #f37142; }
+  .business-blue { color: #308eef; }
+  .strategy-green { color: #2ba471; }
+  .border-l-product-orange { border-left-color: #f37142; }
+  .border-l-business-blue { border-left-color: #308eef; }
+  .border-l-strategy-green { border-left-color: #2ba471; }
+  .text-tencent-blue { color: #0052d9; }
+  .text-product-orange { color: #f37142; }
+  .text-business-blue { color: #308eef; }
+  .text-strategy-green { color: #2ba471; }
+</style>

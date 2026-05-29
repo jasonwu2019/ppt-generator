@@ -1,0 +1,83 @@
+<!--
+  Table of Contents Slide Template - Fluid Intelligence Design System
+  Placeholders:
+    {{TOC_TITLE}}     - TOC heading (e.g., "目录", "十大热门场景")
+    {{TOC_ITEMS}}     - HTML fragment for numbered list items. Format:
+                        <div class="scenario-item flex items-center gap-6 group">
+                          <span class="toc-number">1</span>
+                          <span class="font-headline-md text-headline-md text-on-surface tracking-wide">ITEM TEXT</span>
+                        </div>
+    {{TOC_FOOTER_LEFT}}  - Footer left text
+    {{TOC_FOOTER_RIGHT}} - Footer right text
+    {{DECORATION_IMG_URL}} - URL for the decorative glass image
+-->
+<!-- BEGIN: TOCSlide -->
+<section class="slide" data-slide-type="toc">
+  <div class="w-full h-full flex flex-row overflow-hidden gradient-mesh">
+    <!-- Left: Glassmorphism Decorative Panel (35%) -->
+    <div class="w-[35%] h-full relative overflow-hidden flex items-center justify-center p-12">
+      <div class="relative w-full h-[80%] flex items-center justify-center">
+        <div class="absolute w-[120%] h-[120%] bg-primary/5 rounded-full blur-[120px]"></div>
+        <div class="relative w-full aspect-square max-w-md">
+          <div class="absolute inset-0 bg-white/40 backdrop-blur-3xl rounded-[3rem] border border-white/30 shadow-2xl overflow-hidden group">
+            <img class="w-full h-full object-cover scale-110 transition-transform duration-[10s] ease-linear group-hover:scale-125"
+                 src="{{DECORATION_IMG_URL}}" alt="Abstract decoration"
+                 onerror="this.parentElement.style.background='linear-gradient(135deg, #e0e7ff, #dae2fd)'; this.style.display='none'">
+          </div>
+          <div class="absolute -top-8 -right-8 w-24 h-24 bg-[#00ccf9]/30 backdrop-blur-lg rounded-full border border-white/40 shadow-lg"></div>
+          <div class="absolute -bottom-12 left-1/4 w-40 h-40 bg-primary/10 backdrop-blur-md rounded-full border border-white/20 shadow-xl"></div>
+        </div>
+      </div>
+    </div>
+    <!-- Right: Content Section (65%) -->
+    <div class="w-[65%] h-full flex items-center bg-white/40 backdrop-blur-sm px-24">
+      <div class="max-w-4xl w-full">
+        <!-- Heading -->
+        <div class="mb-16">
+          <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight mb-4">{{TOC_TITLE}}</h1>
+          <div class="w-24 h-1.5 bg-primary rounded-full"></div>
+        </div>
+        <!-- Two-Column Item List -->
+        <div class="grid grid-cols-2 gap-x-24 gap-y-8">
+          {{TOC_ITEMS}}
+        </div>
+        <!-- Brand Footer -->
+        <div class="mt-20 flex items-center gap-3 text-outline opacity-40">
+          <span class="font-label-md text-label-md uppercase tracking-widest">{{TOC_FOOTER_LEFT}}</span>
+          <div class="w-8 h-px bg-outline"></div>
+          <span class="font-label-md text-label-md">{{TOC_FOOTER_RIGHT}}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- END: TOCSlide -->
+
+<style>
+  /* TOC Slide Specific Styles */
+  .gradient-mesh {
+    background-color: #faf8ff;
+    background-image:
+      radial-gradient(at 0% 0%, hsla(217, 100%, 90%, 1) 0px, transparent 50%),
+      radial-gradient(at 50% 0%, hsla(217, 100%, 95%, 1) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, hsla(217, 100%, 98%, 1) 0px, transparent 50%);
+  }
+  .scenario-item {
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .scenario-item:hover {
+    transform: translateX(8px);
+  }
+  .toc-number {
+    font-size: 44px;
+    line-height: 1;
+    color: #0050cb;
+    font-style: italic;
+    font-weight: bold;
+    opacity: 0.3;
+    transition: opacity 0.2s;
+  }
+  .scenario-item:hover .toc-number {
+    opacity: 1;
+  }
+</style>

@@ -1,0 +1,42 @@
+<!--
+  Ending Slide Template - Fluid Intelligence Design System
+  Placeholders:
+    {{ENDING_TEXT}}    - Main text (e.g., "感谢倾听", "Thank You", "Q&A")
+    {{ENDING_BG_COLOR}} - Background color (default: #005eff)
+    {{ENDING_SUBTEXT}}  - Optional secondary text below main text (remove div if empty)
+-->
+<!-- BEGIN: EndingSlide -->
+<section class="slide" data-slide-type="ending">
+  <main class="aspect-16-9-container flex items-center" style="background-color: {{ENDING_BG_COLOR}};" data-purpose="presentation-slide">
+    <!-- Decorative Elements -->
+    <div class="absolute inset-0 z-0 pointer-events-none">
+      <div class="absolute bg-white/10" style="width: 12%; height: 21%; left: 30%; top: 27%;"></div>
+      <div class="absolute bg-white/10" style="width: 35%; height: 28%; left: 4%; top: 35%;"></div>
+      <div class="absolute bg-white/30" style="width: 4.5%; height: 8%; left: 11.5%; top: 59%;"></div>
+    </div>
+    <!-- Main Text -->
+    <section class="relative z-10 pl-[4.5%]" data-purpose="main-message">
+      <h1 class="thank-you-text text-white font-bold italic leading-none select-none" style="font-size: 11vw;">{{ENDING_TEXT}}</h1>
+      <p class="text-white/60 text-2xl mt-6 font-medium" style="font-size: 2vw;">{{ENDING_SUBTEXT}}</p>
+    </section>
+  </main>
+</section>
+<!-- END: EndingSlide -->
+
+<style>
+  /* Ending Slide Specific Styles */
+  .aspect-16-9-container {
+    aspect-ratio: 16 / 9;
+    width: 100vw;
+    max-height: 100vh;
+    margin: auto;
+    position: relative;
+    overflow: hidden;
+  }
+  .thank-you-text {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-style: italic;
+    letter-spacing: 0.05em;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  }
+</style>

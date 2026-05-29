@@ -1,0 +1,105 @@
+<!--
+  Cover Slide Template - Fluid Intelligence Design System
+  Placeholders:
+    {{TITLE}}           - Main title text
+    {{SUBTITLE}}        - Subtitle text (e.g., "——产品介绍、应用案例解析")
+    {{FOOTER}}          - Footer/organization text (e.g., "生态赋能中心")
+    {{BG_IMAGE_URL}}    - Background image URL (cityscape or relevant image). If empty: use gradient fallback.
+    {{LOGO_URL}}        - Logo image URL (optional, remove <img> if not needed)
+    {{COVER_IMAGE_URL}} - RIGHT-SIDE hero/feature image URL. Place in the white area right of diagonal overlay.
+                          Use a TRANSPARENT PNG (no background) for best results.
+                          If empty or image fails to load: shows built-in abstract decorative SVG as fallback.
+                          Size: ~600px wide recommended, auto-scaled to 42% container width.
+    {{COVER_IMAGE_ALT}} - Alt text for the cover image
+-->
+<!-- BEGIN: CoverSlide -->
+<section class="slide" data-slide-type="cover">
+  <main class="aspect-16-9-container bg-white flex" data-purpose="presentation-slide">
+    <!-- Background Image (right side, visible through white area) -->
+    <div class="absolute inset-0 w-full h-full z-0" data-purpose="cityscape-background">
+      <img alt="Background" class="w-full h-full object-cover object-right" src="{{BG_IMAGE_URL}}" onerror="this.parentElement.style.background='linear-gradient(135deg, #e8f0fe 0%, #d2e3fc 30%, #c5d9f8 60%, #e8f0fe 100%)';this.style.display='none'">
+    </div>
+    <!-- Blue Diagonal Overlay -->
+    <div class="diagonal-overlay flex flex-col justify-between p-[6%] text-white" data-purpose="content-overlay">
+      <!-- Logo -->
+      <header class="flex items-center space-x-12" data-purpose="brand-logos">
+        <img src="{{LOGO_URL}}" alt="Logo" class="h-[5vw] w-auto object-contain" onerror="this.style.display='none'">
+      </header>
+      <!-- Title Section -->
+      <section class="mt-[-4%]" data-purpose="title-section">
+        <h1 class="main-title font-bold mb-4">{{TITLE}}</h1>
+        <p class="sub-title font-medium">{{SUBTITLE}}</p>
+      </section>
+      <!-- Footer -->
+      <footer data-purpose="footer-info">
+        <p class="footer-text font-medium">{{FOOTER}}</p>
+      </footer>
+    </div>
+    <!-- Right-Side Hero/Feature Image (in the white area, right of diagonal) -->
+    <div class="absolute right-[3%] top-1/2 -translate-y-1/2 z-15" style="width:42%; max-width:620px;" data-purpose="cover-hero-image">
+      <!-- Fallback decorative graphic: shown by default, hidden when real image loads -->
+      <div class="cover-fallback-graphic" style="width:100%;">
+        <svg viewBox="0 0 520 440" xmlns="http://www.w3.org/2000/svg" style="display:block; width:100%; height:auto;">
+          <!-- Large abstract circle cluster -->
+          <circle cx="280" cy="140" r="120" fill="none" stroke="#0052D9" stroke-width="2" opacity="0.15"/>
+          <circle cx="280" cy="140" r="90" fill="none" stroke="#308EEF" stroke-width="3" opacity="0.25"/>
+          <circle cx="280" cy="140" r="55" fill="#0052D9" opacity="0.08"/>
+          <!-- Floating geometric shapes -->
+          <rect x="60" y="200" width="80" height="80" rx="16" fill="none" stroke="#0052D9" stroke-width="2.5" opacity="0.12" transform="rotate(15 100 240)"/>
+          <rect x="380" y="280" width="100" height="100" rx="20" fill="none" stroke="#308EEF" stroke-width="2" opacity="0.1" transform="rotate(-10 430 330)"/>
+          <rect x="350" y="60" width="60" height="60" rx="12" fill="#308EEF" opacity="0.06" transform="rotate(25 380 90)"/>
+          <!-- Connecting thin lines (tech/network feel) -->
+          <line x1="280" y1="140" x2="100" y2="240" stroke="#0052D9" stroke-width="1" opacity="0.12"/>
+          <line x1="280" y1="140" x2="430" y2="330" stroke="#308EEF" stroke-width="1" opacity="0.1"/>
+          <line x1="280" y1="140" x2="380" y2="90" stroke="#0052D9" stroke-width="1" opacity="0.1"/>
+          <!-- Small accent dots -->
+          <circle cx="100" cy="240" r="5" fill="#0052D9" opacity="0.3"/>
+          <circle cx="430" cy="330" r="4" fill="#308EEF" opacity="0.25"/>
+          <circle cx="380" cy="90" r="4" fill="#0052D9" opacity="0.2"/>
+          <circle cx="160" cy="360" r="6" fill="#308EEF" opacity="0.2"/>
+          <circle cx="450" cy="180" r="3" fill="#0052D9" opacity="0.15"/>
+          <!-- Bottom decorative arc -->
+          <path d="M 0 400 Q 130 340 260 400 Q 390 460 520 400" fill="none" stroke="#0052D9" stroke-width="2" opacity="0.08"/>
+          <path d="M 20 420 Q 130 370 260 420 Q 390 470 500 420" fill="none" stroke="#308EEF" stroke-width="1.5" opacity="0.06"/>
+        </svg>
+      </div>
+      <!-- Real cover image (hidden by default, shown by onload) -->
+      <img src="{{COVER_IMAGE_URL}}" alt="{{COVER_IMAGE_ALT}}" class="cover-hero-img" style="display:none; width:100%; height:auto; filter: drop-shadow(0 20px 40px rgba(0,30,80,0.15));" onload="var fb=this.parentElement.querySelector('.cover-fallback-graphic');if(fb)fb.style.display='none';this.style.display='block';" onerror="/* fallback stays visible */">
+    </div>
+  </main>
+</section>
+<!-- END: CoverSlide -->
+
+<style>
+  /* Cover Slide Specific Styles */
+  .aspect-16-9-container {
+    aspect-ratio: 16 / 9;
+    width: 100vw;
+    max-height: 100vh;
+    margin: auto;
+    position: relative;
+    overflow: hidden;
+  }
+  .diagonal-overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 78%;
+    height: 100%;
+    background-color: #0052D9;
+    clip-path: polygon(0 0, 100% 0, 82% 100%, 0 100%);
+    z-index: 10;
+  }
+  .main-title {
+    font-size: 5.5vw;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+  .sub-title {
+    font-size: 2.2vw;
+    opacity: 0.9;
+  }
+  .footer-text {
+    font-size: 1.8vw;
+    letter-spacing: 0.05em;
+  }
+</style>

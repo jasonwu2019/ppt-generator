@@ -1,0 +1,76 @@
+<!--
+  Template: Content Page - Data Table
+  Type: 表格 (Table)
+  Design: Glassmorphism data table with primary header, hover rows, entrance animation
+  Placeholders:
+    {{TABLE_TITLE}}       - Table section title (e.g., "近期高价值应用场景梳理")
+    {{TABLE_SUBTITLE}}    - Subtitle text under title
+    {{TABLE_HEADERS}}     - <tr> with <th> elements for column headers
+    {{TABLE_ROWS}}        - <tr> elements for data rows
+    {{TABLE_FOOTER}}      - Footer attribution text (e.g., "数据来源：...")
+    {{LOGO_URL}}          - Logo image URL
+-->
+<section class="slide">
+  <div class="bg-mesh h-screen w-screen overflow-hidden text-on-surface select-none flex flex-col">
+    <div class="flex flex-col h-full w-full max-w-[1440px] mx-auto px-10 py-4 relative">
+      <!-- Header -->
+      <header class="flex justify-between items-start pt-6 pb-4">
+        <div class="flex flex-col gap-1">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-8 bg-primary parallelogram"></div>
+            <h1 class="font-headline italic font-bold text-headline-lg bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              {{TABLE_TITLE}}
+            </h1>
+          </div>
+          <p class="text-outline font-label-md pl-12">{{TABLE_SUBTITLE}}</p>
+        </div>
+        <div class="flex flex-col items-end">
+          <img alt="Logo" class="h-10 object-contain" src="{{LOGO_URL}}"/>
+        </div>
+      </header>
+      <!-- Main Content: Table -->
+      <main class="flex-grow flex items-center justify-center py-4">
+        <div class="w-full glass-container rounded-xl overflow-hidden shadow-sm border border-outline-variant/30">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              {{TABLE_HEADERS}}
+            </thead>
+            <tbody class="divide-y divide-outline-variant/20">
+              {{TABLE_ROWS}}
+            </tbody>
+          </table>
+        </div>
+      </main>
+      <!-- Footer -->
+      <footer class="flex justify-between items-center py-6 border-t border-outline-variant/10">
+        <div class="flex items-center gap-2 text-outline font-label-md">
+          <span class="material-symbols-outlined text-orange-400 text-sm">star</span>
+          {{TABLE_FOOTER}}
+        </div>
+        <div class="flex-grow max-w-[200px] h-[2px] bg-gradient-to-r from-primary/30 to-transparent ml-auto rounded-full"></div>
+      </footer>
+    </div>
+    <!-- Background Decorative -->
+    <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] -z-10 translate-x-1/2 -translate-y-1/2"></div>
+    <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-secondary/5 rounded-full blur-[80px] -z-10 -translate-x-1/2 translate-y-1/2"></div>
+  </div>
+</section>
+
+<!-- Usage example for {{TABLE_HEADERS}}:
+<tr class="bg-primary text-on-primary">
+  <th class="py-4 px-6 font-headline text-body-lg font-semibold w-[15%]">行业</th>
+  <th class="py-4 px-6 font-headline text-body-lg font-semibold w-[40%]">真实落单场景</th>
+  <th class="py-4 px-6 font-headline text-body-lg font-semibold w-[25%]">核心价值</th>
+  <th class="py-4 px-6 font-headline text-body-lg font-semibold w-[20%]">关键提效</th>
+</tr>
+
+Usage example for {{TABLE_ROWS}}:
+<tr class="hover:bg-primary/5 transition-colors">
+  <td class="py-3 px-6 font-semibold text-primary">
+    <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[18px] text-orange-400 star-icon">star</span> 制造业</span>
+  </td>
+  <td class="py-3 px-6 text-body-md text-on-surface-variant leading-relaxed">生产报表自动汇总 / ERP打通 / 战略提案撰写</td>
+  <td class="py-3 px-6 text-body-md text-on-surface-variant">管理层从事务性工作中解放</td>
+  <td class="py-3 px-6 text-body-md font-bold text-primary italic">事务性时间省 70%</td>
+</tr>
+-->

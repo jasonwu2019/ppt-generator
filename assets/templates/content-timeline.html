@@ -1,0 +1,85 @@
+<!--
+  Template: Content Page - Diagonal Timeline
+  Type: 数据分析/曲线 (Data Analysis / Trend Timeline)
+  Design: Diagonal timeline line with alternating above/below milestone cards
+  Placeholders:
+    {{TIMELINE_TITLE}}        - Page title (gradient text)
+    {{TIMELINE_MILESTONES}}   - Array of milestone blocks, each with:
+                                {{M_DATE}}     - Date label
+                                {{M_TITLE}}    - Milestone event title
+                                {{M_DESC}}     - Description text (can have <br/>)
+                                {{M_COLOR}}    - Color class (e.g. text-[#0050cb])
+                                {{M_STAR}}     - Optional: <span class="star-icon">★</span>
+                                {{M_POS}}      - "up" or "down" (above or below the line)
+                                {{M_LEFT}}     - Left position % along the line (e.g., "8%")
+                                {{M_HEIGHT}}   - Connector line height (e.g., "h-24")
+                                {{M_OFFSET}}   - Card offset from marker (e.g., "bottom-28" or "top-24")
+    {{TIMELINE_SUMMARY}}      - Footer summary text
+    {{LOGO_URL}}              - Logo image URL
+-->
+<section class="slide">
+  <div class="canvas-16-9">
+    <!-- Header -->
+    <div class="absolute top-8 left-10 flex items-center gap-4 z-50">
+      <div class="flex gap-1">
+        <div class="w-4 h-10 bg-[#0050cb] transform -skew-x-12"></div>
+        <div class="w-4 h-10 bg-[#0050cb] transform -skew-x-12"></div>
+      </div>
+      <h1 class="text-[36px] font-bold italic font-display bg-clip-text text-transparent bg-gradient-to-r from-[#0050cb] to-[#00a3ff]">
+        {{TIMELINE_TITLE}}
+      </h1>
+    </div>
+    <div class="absolute top-8 right-10 z-50">
+      <img alt="Logo" class="h-10" src="{{LOGO_URL}}"/>
+    </div>
+    <!-- Timeline Container -->
+    <div class="absolute inset-0">
+      <!-- Diagonal Line -->
+      <div class="timeline-line">
+        <div class="timeline-start-dot"></div>
+        <div class="timeline-arrow"></div>
+        {{TIMELINE_MILESTONES}}
+      </div>
+    </div>
+    <!-- Footer Summary -->
+    <div class="absolute bottom-8 left-0 right-0 flex justify-center px-10">
+      <div class="max-w-5xl text-center">
+        <p class="text-[18px] text-primary font-medium tracking-wide">
+          {{TIMELINE_SUMMARY}}
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Usage example for each milestone block:
+For UP position (above the line):
+<div class="absolute left-[8%]" style="top:0">
+  <div class="milestone-marker"></div>
+  <div class="connector-line h-24" style="left:0; bottom:6px"></div>
+  <div class="info-card bottom-28" style="left:0">
+    <div class="milestone-text-group">
+      <div class="date-label text-[#0050cb]">2025.01</div>
+      <div class="milestone-title">DeepSeek R1 发布</div>
+      <p class="milestone-desc">开始具备更强的思考能力</p>
+    </div>
+  </div>
+</div>
+
+For DOWN position (below the line):
+<div class="absolute left-[34%]" style="top:0">
+  <div class="milestone-marker"></div>
+  <div class="connector-line h-20" style="left:0; top:6px"></div>
+  <div class="info-card top-24" style="left:0">
+    <div class="milestone-text-group">
+      <div class="date-label text-[#8e44ad]">2025.07 <span class="star-icon">★</span></div>
+      <div class="milestone-title">CodeBuddy IDE 发布</div>
+      <p class="milestone-desc">全球首个全栈 AI 工程师</p>
+    </div>
+  </div>
+</div>
+
+Note: Alternating up/down positions along the diagonal prevents card overlap.
+Typical pattern: milestone 1=UP, 2=UP, 3=DOWN, 4=UP, 5=DOWN, 6=UP, 7=DOWN, 8=UP, 9=DOWN
+Adjust connector heights and offsets for varying text lengths.
+-->

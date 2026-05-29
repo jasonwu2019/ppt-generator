@@ -1,0 +1,145 @@
+<!--
+  Template: Content Page - Case Study
+  Type: 场景案例 (Scenario / Case Study)
+  Design: Glassmorphism cards with pain points, solution flow diagram, business impact metrics
+  Placeholders:
+    {{CASE_TITLE}}            - Case study title
+    {{CASE_SUBTITLE}}         - Subtitle/description
+    {{CASE_SOURCES}}          - HTML for 典型需求来源 category cards (3 icons)
+    {{CASE_PAIN_POINTS}}      - HTML for 业务痛点 cards (2 items)
+    {{CASE_SOLUTION_TITLE}}   - Solution section title
+    {{CASE_SOLUTION_FLOW}}    - HTML for the 3-node flow diagram (企微→WB→知识库)
+    {{CASE_METRICS}}          - HTML for 业务效果 metric cards (2 items)
+    {{CASE_REFERENCES}}       - HTML for reference tags (span elements)
+    {{CASE_FOOTER_BUTTON}}    - Footer button text (e.g., "演示视频")
+    {{LOGO_URL}}              - Logo image URL
+-->
+<section class="slide">
+  <main class="w-full h-screen max-w-[1920px] aspect-[16/9] flex flex-col p-8 relative overflow-hidden" style="background: linear-gradient(135deg, #f2f3ff 0%, #dae2fd 100%); font-family: 'Inter', sans-serif;">
+    <!-- Header -->
+    <header class="flex justify-between items-start mb-6">
+      <div class="flex items-center gap-3">
+        <div class="w-6 h-8 bg-primary parallelogram"></div>
+        <h1 class="font-headline italic text-headline-lg text-primary">
+          {{CASE_TITLE}}
+        </h1>
+      </div>
+      <img alt="Logo" class="h-10 object-contain" src="{{LOGO_URL}}"/>
+    </header>
+    <!-- Top Section Grid -->
+    <div class="grid grid-cols-12 gap-6 mb-6 h-[22%]">
+      <!-- 典型需求来源 -->
+      <section class="col-span-4 glass-card rounded-xl p-4 section-accent-left flex flex-col justify-between">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="material-symbols-outlined text-primary">group</span>
+          <h2 class="font-headline text-body-lg text-on-surface">典型需求来源</h2>
+        </div>
+        <div class="flex gap-3 h-full">
+          {{CASE_SOURCES}}
+        </div>
+      </section>
+      <!-- 业务痛点 -->
+      <section class="col-span-8 glass-card rounded-xl p-4 section-accent-orange">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="material-symbols-outlined text-[#ff6b35]">error</span>
+          <h2 class="font-headline text-body-lg text-on-surface">业务痛点</h2>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          {{CASE_PAIN_POINTS}}
+        </div>
+      </section>
+    </div>
+    <!-- Main Flow Section -->
+    <div class="grid grid-cols-12 gap-6 flex-grow mb-6 overflow-hidden">
+      <!-- WorkBuddy 核心解法 -->
+      <section class="col-span-8 glass-card rounded-xl p-6 section-accent-left relative">
+        <div class="flex items-center gap-2 mb-8">
+          <span class="material-symbols-outlined text-primary">desktop_windows</span>
+          <h2 class="font-headline text-body-lg text-on-surface">{{CASE_SOLUTION_TITLE}}</h2>
+        </div>
+        <div class="flex items-center justify-center gap-12 mt-8">
+          {{CASE_SOLUTION_FLOW}}
+        </div>
+      </section>
+      <!-- 业务效果 -->
+      <section class="col-span-4 glass-card rounded-xl p-6 section-accent-green flex flex-col">
+        <div class="flex items-center gap-2 mb-8">
+          <span class="material-symbols-outlined text-[#34a853]">trending_up</span>
+          <h2 class="font-headline text-body-lg text-on-surface">业务效果</h2>
+        </div>
+        <div class="flex flex-col gap-6 justify-center flex-grow">
+          {{CASE_METRICS}}
+        </div>
+      </section>
+    </div>
+    <!-- Footer Bar -->
+    <footer class="glass-card rounded-xl px-6 py-4 flex justify-between items-center mt-auto">
+      <div class="flex items-center gap-6">
+        <div class="flex items-center gap-2 pr-6 border-r border-outline-variant">
+          <span class="material-symbols-outlined text-primary fill-icon">verified_user</span>
+          <span class="font-bold text-on-surface-variant">案例参考</span>
+        </div>
+        <div class="flex gap-4">
+          {{CASE_REFERENCES}}
+        </div>
+      </div>
+      <button class="flex items-center gap-2 px-6 py-2 bg-white rounded-full border border-primary/20 shadow-sm hover:bg-primary-container hover:text-white transition-all duration-300 group">
+        <span class="material-symbols-outlined text-orange-500 fill-icon group-hover:text-white">play_circle</span>
+        <span class="font-bold text-on-surface-variant group-hover:text-white">{{CASE_FOOTER_BUTTON}}</span>
+      </button>
+    </footer>
+  </main>
+</section>
+
+<!-- Usage examples:
+{{CASE_SOURCES}}:
+<div class="flex-1 bg-white/50 rounded-lg flex flex-col items-center justify-center p-2 border border-white/40">
+  <span class="material-symbols-outlined text-primary mb-1">local_shipping</span>
+  <span class="font-label-md text-on-surface">物流</span>
+</div>
+... repeat for each source
+
+{{CASE_PAIN_POINTS}}:
+<div class="flex gap-3 bg-white/80 p-3 rounded-xl border border-white/40">
+  <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
+    <span class="material-symbols-outlined text-orange-500">person_add</span>
+  </div>
+  <div>
+    <h3 class="font-bold text-on-surface text-body-md">客服满负荷</h3>
+    <p class="text-on-surface-variant text-[12px] leading-tight">咨询量大，人工响应不及时。</p>
+  </div>
+</div>
+
+{{CASE_SOLUTION_FLOW}}:
+3-node flow: Source IM → WorkBuddy Core → Knowledge Base
+<div class="flex items-center justify-center gap-12">
+  <div class="flex flex-col items-center gap-3">
+    <div class="w-24 h-24 bg-white/60 rounded-2xl flex items-center justify-center shadow-sm border border-primary/20">
+      <span class="material-symbols-outlined text-primary text-5xl">chat</span>
+    </div>
+    <p class="font-bold text-on-surface">企业微信</p>
+  </div>
+  <span class="material-symbols-outlined text-primary opacity-60">arrow_forward</span>
+  <div class="relative group">
+    <div class="absolute -inset-1 bg-gradient-to-r from-primary to-secondary rounded-2xl blur opacity-25"></div>
+    <div class="relative w-48 py-6 bg-primary-container rounded-2xl flex flex-col items-center justify-center text-on-primary shadow-xl">
+      <p class="font-headline italic mb-1">WorkBuddy</p>
+      <div class="h-px w-12 bg-white/30 my-2"></div>
+      <p class="text-[11px] text-center px-4">定时任务获取数据<br/>连通管理知识库</p>
+    </div>
+  </div>
+  <span class="material-symbols-outlined text-primary opacity-60">arrow_forward</span>
+  <div class="flex flex-col items-center gap-3">
+    <div class="w-24 h-24 bg-white/60 rounded-2xl flex items-center justify-center shadow-sm border border-primary/20">
+      <span class="material-symbols-outlined text-primary text-5xl">database</span>
+    </div>
+    <p class="font-bold text-on-surface">知识库平台</p>
+  </div>
+</div>
+
+{{CASE_METRICS}}:
+<div class="bg-white/80 p-5 rounded-xl border border-white/40 flex justify-between items-center hover:bg-white transition-colors duration-300">
+  <span class="font-headline text-on-surface-variant">单人回复量</span>
+  <span class="font-display text-[#34a853] italic">x2</span>
+</div>
+-->
