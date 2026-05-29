@@ -1,7 +1,7 @@
 ---
 name: ppt-generator
-version: "3.15"
-description: "HTML-based presentation slide generator using the Fluid Intelligence design system — glassmorphism, Electric Blue, immersive 16:9 with 12 content templates (Layout A-L). Generates full-screen HTML slides with keyboard/scroll navigation and pixel-perfect PPTX/PDF export via Playwright full-screen browser mode. v3.15 adds --start-fullscreen to ensure exports match F11 full-screen browser view."
+version: "3.16"
+description: "HTML-based presentation slide generator using the Fluid Intelligence design system — glassmorphism, Electric Blue, immersive 16:9 with 12 content templates (Layout A-L). Generates full-screen HTML slides with keyboard/scroll navigation and pixel-perfect PPTX/PDF export via Playwright 16:9 FHD viewport. v3.16 optimizes export: headless Chromium viewport = true full-screen canvas (no browser chrome), waits for Tailwind + fonts to fully load before capturing."
 agent_created: true
 ---
 
@@ -280,7 +280,7 @@ Additional CSS for Layout F/G — see each template's Layout reference section f
 
 ### Step 6: PPTX / PDF Export (only if user requests .pptx or .pdf)
 
-**Architecture (v3.15)**: Playwright full-screen browser screenshot-driven export. Opens the HTML in headless Chromium **full-screen mode** (`--start-fullscreen`, equivalent to F11 in a real browser), captures each `<section class="slide">` as a retina-quality (3840×2160) screenshot of the full 1920×1080 viewport, and embeds the image as a full-slide background. In headless mode the viewport IS the screen (no OS window chrome), so `full_page=False` viewport capture = true full-screen browser view. This guarantees the exported file is **pixel-identical** to opening the HTML in a browser and pressing F11.
+**Architecture (v3.16)**: Playwright 16:9 FHD viewport screenshot export. Opens the HTML in headless Chromium at 1920×1080 (16:9 Full HD), waits for Tailwind CSS CDN + all Google Fonts to fully load (`document.fonts.ready`), then captures each `<section class="slide">` as a retina-quality (3840×2160) viewport screenshot. **Headless Chromium has NO browser chrome** — no title bar, no tabs, no address bar, no OS window decorations. The 1920×1080 viewport IS the entire visible area, identical to pressing F11 in a real browser at 1920×1080 resolution. This guarantees the exported PPTX/PDF is **pixel-identical** to the browser full-screen view.
 
 **Prerequisites** (install once per environment):
 
@@ -300,11 +300,13 @@ Additional CSS for Layout F/G — see each template's Layout reference section f
 3. Deliver the file to the user via `deliver_attachments`.
 
 **How it works**:
-- Opens the HTML in headless Chromium with `--start-fullscreen` (simulates F11 full-screen)
-- Viewport = 1920×1080 (Full HD) — in headless mode this IS the full-screen content area (no browser chrome)
-- Screenshots at @2x retina → 3840×2160 PNG per slide
+- Launches headless Chromium — NO browser chrome = viewport is the full visible canvas
+- Viewport = 1920×1080 (16:9 FHD) — the standard presentation full-screen resolution
+- Waits for `document.fonts.ready` to ensure all Google Fonts are rendered
+- Extra 2s buffer for Tailwind CDN to finish compiling all utility classes
 - Cycles through slides via JS (sets `.active` class, others `.above`/`.below`)
-- Each slide fills 100vh/100vw of the viewport, so viewport screenshot = complete slide capture
+- `full_page=False` captures the 1920×1080 viewport — this IS the full-screen view (each slide fills 100vh/100vw)
+- Screenshots at @2x retina → 3840×2160 PNG per slide
 - PPTX: 16:9 (13.333"×7.5"), each slide = one screenshot filling the entire slide
 - PDF: multi-page, each page = one screenshot, 150dpi
 

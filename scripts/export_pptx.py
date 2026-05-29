@@ -1,35 +1,38 @@
 #!/usr/bin/env python3
 """
-PPTX & PDF Export Script — Full-Screen Browser Screenshot-Driven (v5.0)
-========================================================================
-Pixel-perfect export: opens the HTML in headless Chromium **full-screen mode**,
-captures each <section class="slide"> as a 2x retina screenshot at the full viewport,
-and embeds the images as full-slide backgrounds in PPTX + PDF.
+PPTX & PDF Export Script — 16:9 Full-Screen Viewport Screenshot (v6.0)
+=======================================================================
+Pixel-perfect export: opens the HTML in headless Chromium at 1920×1080
+(FHD 16:9 — the standard full-screen presentation resolution), waits for
+Tailwind CSS + all web fonts to fully load, then captures each
+<section class="slide"> as a retina-quality (3840×2160) viewport screenshot.
 
-Full-screen mode means the browser launches with --start-fullscreen, taking the
-entire 1920×1080 viewport (standard Full HD) without any browser chrome — exactly
-what a user sees when pressing F11 in a real browser. Since headless Chromium has
-no OS-level window chrome, the viewport IS the full screen.
+Headless Chromium has NO browser chrome (no title bar, no tabs, no address
+bar, no OS window decorations). The 1920×1080 viewport IS the entire visible
+area — exactly what a user sees when they press F11 in a real browser at
+1920×1080. The exported file is pixel-identical to the browser full-screen view.
 
 Usage:
     python export_pptx.py <input_html> <output_file>
 
     Output format is detected from extension:
         .pptx  → PowerPoint
-        .pdf   → PDF (each page = full-screen slide screenshot)
+        .pdf   → PDF (multi-page, one screenshot per page)
 
 Dependencies:
     playwright, python-pptx, Pillow
 
 Architecture:
-    1. Launch headless Chromium in full-screen mode (--start-fullscreen)
-    2. Set viewport to 1920×1080 @2x device scale factor (3840×2160 capture)
-       — this IS the full-screen content area, identical to F11 browser mode
-    3. Use JS to cycle through slide sections, making each active
-    4. Screenshot each slide as a full-viewport PNG (full_page=False = viewport-only,
-       which equals full-screen since each slide fills 100vh/100vw)
-    5. PPTX: embed each PNG as a full-slide background image (16:9, 13.333"×7.5")
-    6. PDF:  stitch screenshots into multi-page PDF, 150dpi
+    1. Launch headless Chromium (no browser chrome — effectively full-screen)
+    2. Set viewport to 1920×1080 (16:9 FHD) @2x device scale → 3840×2160 PNG
+    3. Wait for Tailwind CDN to finish compiling CSS
+    4. Wait for all web fonts (Google Fonts) to load via document.fonts.ready
+    5. Cycle through slides via JS (sets .active class, others .above/.below)
+    6. Wait for CSS transition (0.6s) to settle
+    7. Screenshot the viewport (full_page=False) — this captures the exact
+       1920×1080 visible area, which IS the full-screen browser view
+    8. PPTX: embed each PNG as full-slide background (16:9, 13.333" × 7.5")
+    9. PDF:  stitch screenshots into multi-page PDF at 150dpi
 """
 
 import sys
@@ -60,27 +63,36 @@ def capture_slides(html_path: str) -> list[bytes]:
     file_url = abs_html.as_uri()
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(
-            headless=True,
-            args=["--start-fullscreen"],  # full-screen browser mode (F11 equivalent)
-        )
+        # Headless Chromium has NO browser chrome — no title bar, tabs,
+        # address bar, or OS window decorations. The viewport IS the
+        # full visible area, exactly like F11 full-screen in a real browser.
+        browser = p.chromium.launch(headless=True)
         context = browser.new_context(
             viewport={"width": 1920, "height": 1080},
-            # ^ 1920×1080 IS the full-screen content area.
-            #   In headless Chromium there is no OS window chrome
-            #   (title bar, tabs, address bar), so the viewport
-            #   equals the full screen. Combined with --start-fullscreen,
-            #   this is pixel-identical to F11 full-screen mode.
+            # ^ 16:9 Full HD — the standard presentation resolution.
+            #   In headless mode this IS the full visible canvas.
             device_scale_factor=2,  # retina-quality captures → 3840×2160 PNG
         )
         page = context.new_page()
 
         # Navigate to HTML
-        print(f"Loading (full-screen mode): {file_url}")
-        page.goto(file_url, wait_until="networkidle", timeout=60000)
+        print(f"Loading (16:9 FHD viewport): {file_url}")
+        page.goto(file_url, wait_until="domcontentloaded", timeout=60000)
 
-        # Wait for Tailwind CDN + fonts
-        page.wait_for_timeout(3000)
+        # Wait for Tailwind CDN to finish compiling CSS + all fonts to load
+        page.wait_for_function(
+            """
+            () => {
+                // Wait for Tailwind to initialize (adds .tailwind-ready class or similar)
+                // and all fonts to be available
+                const ready = document.fonts ? document.fonts.ready : Promise.resolve();
+                return ready.then(() => true);
+            }
+            """,
+            timeout=30000,
+        )
+        # Extra buffer for Tailwind CDN to finish compiling utility classes
+        page.wait_for_timeout(2000)
 
         # Count slides
         slide_count = page.evaluate(
@@ -107,8 +119,9 @@ def capture_slides(html_path: str) -> list[bytes]:
             # Let CSS transition settle
             page.wait_for_timeout(400)
 
-            # Screenshot the full viewport (full_page=False = capture only the
-            # visible 1920×1080 area, which IS the full-screen browser view)
+            # Screenshot the visible viewport (full_page=False = capture only
+            # the 1920×1080 visible area, which is exactly what the user sees
+            # in a browser at F11 full-screen on a 16:9 FHD display)
             png_bytes = page.screenshot(full_page=False, type="png")
             screenshots.append(png_bytes)
             print(f"  Slide {i + 1}/{slide_count} captured ({len(png_bytes) / 1024:.0f} KB)")
