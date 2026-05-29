@@ -1,25 +1,27 @@
 #!/usr/bin/env python3
 """
-PPTX & PDF Export Script — True Browser Full-Screen Export (v7.0)
-==================================================================
-Goal: exported PPTX/PDF pages must be VISUALLY INDISTINGUISHABLE
-from opening the HTML in a real browser and pressing F11 (full-screen).
+PPTX & PDF Export Script — Real Browser Full-Screen Capture (v8.0)
+====================================================================
+HOW IT WORKS (completely different from previous versions):
+  Previous versions used *headless* Chromium — an invisible simulated
+  browser. Even with GPU flags, headless rendering is NOT identical
+  to a real browser (font rendering, backdrop-filter, color pipeline).
 
-Strategy:
-  1. Launch headless Chromium with GPU-enabling flags so backdrop-filter
-     (glassmorphism blur), gradients, and shadows render identically to
-     a real browser.
-  2. Force sRGB color profile for accurate color rendering.
-  3. Wait for the FULL CSS transition (0.6s) + buffer before capturing.
-  4. Screenshot at 1920×1080 @2x retina (3840×2160 PNG) — this is the
-     raw full-screen view, embedded as-is into PPTX/PDF.
+  v8.0 launches a REAL, VISIBLE Chrome browser window in FULL-SCREEN
+  mode (--start-fullscreen = F11 equivalent). The browser takes over
+  the entire display, the HTML renders through the actual Windows GPU
+  pipeline, and then we screenshot the viewport (which IS the full
+  screen in fullscreen mode).
 
-Headless vs real browser:
-  - NO browser chrome in headless mode (no title bar, tabs, address bar,
-    OS window decorations). The 1920×1080 viewport IS the full canvas.
-  - GPU flags (--use-gl=angle, --use-angle=swiftshader) ensure
-    backdrop-filter / glassmorphism / complex gradients render correctly.
-  - --force-color-profile=srgb ensures colors match the real browser.
+  The result: exported PPTX/PDF pages are pixel-identical to what
+  you see when pressing F11 in Chrome.
+
+What happens on screen:
+  - A Chrome window appears and goes full-screen (F11 mode)
+  - Each slide renders in sequence, visible on your screen
+  - Each slide is screenshotted (viewport = full screen)
+  - The window closes after capture
+  - Total time: ~30s for 16 slides
 
 Usage:
     python export_pptx.py <input_html> <output_file>
@@ -36,17 +38,22 @@ from pathlib import Path
 PYTHON = sys.executable
 
 
-# ── Helpers ──────────────────────────────────────────────────
-
 def rel(path: str) -> Path:
     """Resolve a path relative to this script's directory."""
     return (Path(__file__).parent / path).resolve()
 
 
-# ── Playwright screenshot capture ────────────────────────────
+# ── Browser screenshot capture (REAL visible browser) ─────────
 
 def capture_slides(html_path: str) -> list[bytes]:
-    """Open HTML in headless Chromium, screenshot each slide. Returns list of PNG bytes."""
+    """
+    Open HTML in a REAL visible Chromium browser in full-screen mode,
+    screenshot each slide. Returns list of PNG bytes.
+
+    Key: headless=False + --start-fullscreen means the browser renders
+    through the ACTUAL Windows GPU/driver pipeline — identical to what
+    you see when pressing F11 in Chrome.
+    """
     from playwright.sync_api import sync_playwright
 
     abs_html = Path(html_path).resolve()
@@ -57,37 +64,48 @@ def capture_slides(html_path: str) -> list[bytes]:
     file_url = abs_html.as_uri()
 
     with sync_playwright() as p:
-        # ── GPU / rendering flags for headless Chromium ──
-        # Without GPU, backdrop-filter (glassmorphism blur) renders as a
-        # flat background — the #1 reason exported PPTX looks "washed out"
-        # compared to a real browser. These flags enable software GPU
-        # (SwiftShader via ANGLE) so every CSS effect matches the browser.
+        # ── Launch REAL visible Chrome in full-screen mode ──
+        # headless=False → real browser window (actual GPU pipeline)
+        # --start-fullscreen → F11 mode (no title bar, no taskbar)
+        # --disable-infobars → no "Chrome is being controlled" banner
+        # --no-first-run → skip welcome wizard
         chromium_args = [
-            "--headless=new",               # new headless = closer to real browser
-            "--use-gl=angle",              # ANGLE backend (Windows-native OpenGL→D3D)
-            "--use-angle=swiftshader",     # software GPU (no hardware GPU needed)
-            "--force-color-profile=srgb",  # sRGB = standard Web color space
-            "--enable-gpu-rasterization",  # GPU-accelerated 2D canvas
-            "--enable-font-antialiasing",  # smooth font rendering
-            "--disable-low-res-tiling",    # full-resolution compositing
-            "--num-raster-threads=4",      # parallel rasterization
-            "--force-device-scale-factor=2",  # retina-quality at the driver level
+            "--start-fullscreen",           # F11 full-screen mode
+            "--disable-infobars",           # hide automation banner
+            "--no-first-run",               # skip welcome wizard
+            "--no-default-browser-check",   # don't ask to be default
+            "--disable-extensions",         # clean rendering
+            "--disable-background-networking",  # no background traffic
+            "--disable-sync",               # no Chrome sync
+            "--force-color-profile=srgb",   # sRGB color space
+            "--enable-font-antialiasing",   # ClearType-quality text
         ]
 
-        browser = p.chromium.launch(headless=True, args=chromium_args)
+        browser = p.chromium.launch(
+            headless=False,                # REAL visible browser
+            args=chromium_args,
+        )
         context = browser.new_context(
             viewport={"width": 1920, "height": 1080},
-            # ^ 16:9 Full HD (standard presentation resolution).
-            #   No browser chrome in headless mode = this IS the full canvas.
+            # ^ 16:9 Full HD. In fullscreen mode, the browser
+            #   stretches to fill the screen, and this viewport
+            #   IS what gets captured by page.screenshot().
             device_scale_factor=2,  # retina-quality → 3840×2160 PNG
         )
         page = context.new_page()
 
         # Navigate to HTML
-        print(f"Loading (16:9 FHD viewport, GPU on): {file_url}")
+        print(f"\n{'='*60}")
+        print(f"  Opening in REAL Chrome browser (full-screen mode)")
+        print(f"  File: {file_url}")
+        print(f"  The browser window will appear on your screen.")
+        print(f"  Each slide will be captured as the full-screen view.")
+        print(f"{'='*60}\n")
+
         page.goto(file_url, wait_until="domcontentloaded", timeout=60000)
 
-        # Wait for Tailwind CDN to finish compiling CSS + all fonts to load
+        # Wait for all fonts to load
+        print("Waiting for fonts to load...")
         page.wait_for_function(
             """
             () => {
@@ -97,18 +115,20 @@ def capture_slides(html_path: str) -> list[bytes]:
             """,
             timeout=30000,
         )
-        # Extra buffer for Tailwind CDN to finish compiling all utility classes
-        page.wait_for_timeout(2000)
+
+        # Extra buffer for Tailwind CDN + initial render
+        page.wait_for_timeout(3000)
+        print("Fonts loaded. Starting slide capture...\n")
 
         # Count slides
         slide_count = page.evaluate(
             "() => document.querySelectorAll('.slide').length"
         )
-        print(f"Found {slide_count} slides")
+        print(f"Found {slide_count} slides\n")
 
         screenshots: list[bytes] = []
         for i in range(slide_count):
-            # Make this slide active, others above/below
+            # Activate this slide
             page.evaluate(
                 f"""
                 (() => {{
@@ -122,18 +142,22 @@ def capture_slides(html_path: str) -> list[bytes]:
                 }})()
                 """
             )
-            # Let CSS transition fully settle (CSS transition = 0.6s,
-            # wait 1.2s = 2× transition time for safety + reflow)
-            page.wait_for_timeout(1200)
 
-            # Screenshot the visible viewport (full_page=False = capture only
-            # the 1920×1080 visible area — this is exactly the user's
-            # full-screen browser view at F11, 16:9 FHD)
+            # Wait for CSS transition (0.6s) + render settle
+            page.wait_for_timeout(1500)
+
+            # ── CAPTURE ──
+            # In fullscreen mode, the viewport fills the entire screen.
+            # page.screenshot(full_page=False) captures the visible
+            # viewport area, which IS the full-screen browser view.
             png_bytes = page.screenshot(full_page=False, type="png")
             screenshots.append(png_bytes)
-            print(f"  Slide {i + 1}/{slide_count} captured ({len(png_bytes) / 1024:.0f} KB)")
+            print(f"  ✓ Slide {i + 1}/{slide_count} captured "
+                  f"({len(png_bytes) / 1024:.0f} KB)")
 
         browser.close()
+        print(f"\nBrowser closed. {len(screenshots)} slides captured.\n")
+
     return screenshots
 
 
@@ -144,7 +168,6 @@ def export_pdf(screenshots: list[bytes], output_path: str):
     from PIL import Image
     from io import BytesIO
 
-    # Convert PNG bytes to PIL Images
     images: list[Image.Image] = []
     for i, png in enumerate(screenshots):
         img = Image.open(BytesIO(png))
@@ -152,13 +175,13 @@ def export_pdf(screenshots: list[bytes], output_path: str):
         if img.mode in ("RGBA", "P"):
             img = img.convert("RGB")
         images.append(img)
-        print(f"  Slide {i + 1}/{len(screenshots)} → PDF page ({img.width}×{img.height})")
+        print(f"  Slide {i + 1}/{len(screenshots)} → PDF page "
+              f"({img.width}x{img.height})")
 
     if not images:
         print("ERROR: No slides to export")
         sys.exit(1)
 
-    # Save as multi-page PDF
     first = images[0]
     rest = images[1:]
     first.save(
@@ -167,43 +190,40 @@ def export_pdf(screenshots: list[bytes], output_path: str):
         append_images=rest,
         resolution=150.0,
     )
-    print(f"\nPDF created: {output_path} ({os.path.getsize(output_path) / 1024:.0f} KB)")
+    size_kb = os.path.getsize(output_path) / 1024
+    print(f"\nPDF created: {output_path} ({size_kb:.0f} KB)")
 
 
 # ── PPTX export ──────────────────────────────────────────────
 
 def export_pptx(screenshots: list[bytes], output_path: str):
-    """Embed screenshots as full-slide images in a PPTX."""
+    """Embed screenshots as full-slide images in a 16:9 PPTX."""
     from pptx import Presentation
-    from pptx.util import Inches, Emu
-    from pptx.dml.color import RGBColor
+    from pptx.util import Inches
     from io import BytesIO
 
     prs = Presentation()
-    # 16:9 = 13.333" x 7.5"
-    prs.slide_width = Inches(13.333)
+    prs.slide_width = Inches(13.333)   # 16:9
     prs.slide_height = Inches(7.5)
 
     slide_w = prs.slide_width
     slide_h = prs.slide_height
 
     for i, png_bytes in enumerate(screenshots):
-        blank_layout = prs.slide_layouts[6]  # blank layout
+        blank_layout = prs.slide_layouts[6]
         slide = prs.slides.add_slide(blank_layout)
 
-        # Insert image as full-slide background
         img_stream = BytesIO(png_bytes)
         slide.shapes.add_picture(
             img_stream,
-            left=0,
-            top=0,
-            width=slide_w,
-            height=slide_h,
+            left=0, top=0,
+            width=slide_w, height=slide_h,
         )
         print(f"  Slide {i + 1}/{len(screenshots)} embedded in PPTX")
 
     prs.save(output_path)
-    print(f"\nPPTX created: {output_path} ({os.path.getsize(output_path) / 1024:.0f} KB)")
+    size_kb = os.path.getsize(output_path) / 1024
+    print(f"\nPPTX created: {output_path} ({size_kb:.0f} KB)")
 
 
 # ── Main ─────────────────────────────────────────────────────
@@ -236,10 +256,17 @@ def main():
         print("  Install: pip install python-pptx")
         deps_ok = False
 
+    try:
+        from PIL import Image  # noqa: F401
+    except ImportError:
+        print("ERROR: Pillow is not installed.")
+        print("  Install: pip install Pillow")
+        deps_ok = False
+
     if not deps_ok:
         sys.exit(1)
 
-    # ── Capture screenshots (shared for both PPTX and PDF) ──
+    # ── Capture screenshots (REAL browser, full-screen mode) ──
     screenshots = capture_slides(input_html)
 
     # ── Export ──

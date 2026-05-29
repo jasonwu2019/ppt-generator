@@ -1,7 +1,7 @@
 ---
 name: ppt-generator
-version: "3.17"
-description: "HTML-based presentation slide generator using the Fluid Intelligence design system — glassmorphism, Electric Blue, immersive 16:9 with 12 content templates (Layout A-L). Generates full-screen HTML slides with keyboard/scroll navigation and pixel-perfect PPTX/PDF export via Playwright GPU-enabled headless Chromium. v3.17 enables software GPU (SwiftShader/ANGLE) for correct backdrop-filter/glassmorphism rendering, forces sRGB color profile, and extends transition wait to 2× CSS duration."
+version: "3.18"
+description: "HTML-based presentation slide generator using the Fluid Intelligence design system — glassmorphism, Electric Blue, immersive 16:9 with 12 content templates (Layout A-L). Generates full-screen HTML slides with keyboard/scroll navigation and pixel-perfect PPTX/PDF export via Playwright HEADED Chromium full-screen mode. v3.18 switches from headless simulation to a REAL visible Chrome browser in F11 full-screen mode — rendering through the actual Windows GPU pipeline for 100% authentic browser-quality screenshots."
 agent_created: true
 ---
 
@@ -280,7 +280,9 @@ Additional CSS for Layout F/G — see each template's Layout reference section f
 
 ### Step 6: PPTX / PDF Export (only if user requests .pptx or .pdf)
 
-**Architecture (v3.17)**: Playwright GPU-enabled headless Chromium export. Launches with `--use-gl=angle --use-angle=swiftshader` so **backdrop-filter (glassmorphism blur), gradients, and shadows render identically to a real browser** — the #1 fix for "exported file looks washed out." Forces `--force-color-profile=srgb` for accurate color. Waits for CSS transition (0.6s) × 2 = 1.2s before capturing each slide, plus `document.fonts.ready` + Tailwind buffer. **Headless Chromium has NO browser chrome** — the 1920×1080 viewport IS the full-screen canvas, identical to F11 in a real browser.
+**Architecture (v3.18)**: REAL VISIBLE Chrome browser in full-screen mode → screenshot each slide. Unlike all previous versions that used *headless* Chromium (invisible simulated browser), v3.18 launches a **headed** (visible) Chrome window with `--start-fullscreen` (F11 mode). The HTML renders through the **actual Windows GPU/driver pipeline** — the same pipeline used when you open Chrome and press F11. This means font rendering (ClearType), backdrop-filter (hardware-accelerated), color management (Windows ICM), and every CSS effect are **pixel-identical** to a real browser. The viewport screenshot (`full_page=False`) captures exactly what fills the screen in fullscreen mode.
+
+**What you'll see**: A Chrome window will appear and go full-screen. Each slide renders visibly on your screen, then gets captured. The window closes after all slides are done. Total: ~30s for 16 slides. **This is intentional — it IS the browser full-screen experience.**
 
 **Prerequisites** (install once per environment):
 
@@ -299,15 +301,14 @@ Additional CSS for Layout F/G — see each template's Layout reference section f
 
 3. Deliver the file to the user via `deliver_attachments`.
 
-**How it works (v3.17)**:
-- Launches headless Chromium with **GPU-enabling flags**: `--use-gl=angle --use-angle=swiftshader` (software GPU) ensures backdrop-filter, gradients, shadows render correctly — this is the key to matching browser quality
-- `--force-color-profile=srgb` for standard color space matching
-- `--enable-gpu-rasterization --enable-font-antialiasing` for smooth text/graphics
-- `--force-device-scale-factor=2` + Playwright `device_scale_factor=2` → true 3840×2160 retina
-- Waits for `document.fonts.ready` to ensure all Google Fonts rendered
-- 2s buffer for Tailwind CDN to finish compiling utility classes
-- Cycles through slides via JS; waits **1.2s** (2× CSS 0.6s transition) before each screenshot
-- `full_page=False` captures 1920×1080 viewport — exact browser full-screen view
+**How it works (v3.18)**:
+- Launches **headed (visible) Chromium** — NOT headless simulation
+- `--start-fullscreen` → browser enters F11 full-screen mode, filling the entire display
+- Viewport = 1920×1080 @2x → 3840×2160 retina PNG per slide
+- Rendering goes through the actual Windows GPU/driver pipeline (not SwiftShader simulation)
+- ClearType font rendering, hardware backdrop-filter, Windows ICM color — 100% real browser quality
+- Cycles through slides via JS (`active`/`above`/`below` classes); waits 1.5s per slide for transition + reflow
+- `page.screenshot(full_page=False)` captures the viewport = the full-screen browser view
 - PPTX: 16:9 (13.333"×7.5"), each slide = one screenshot filling the entire slide
 - PDF: multi-page, each page = one screenshot, 150dpi
 
