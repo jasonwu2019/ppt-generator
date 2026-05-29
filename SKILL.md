@@ -1,7 +1,7 @@
 ---
 name: ppt-generator
-version: "3.1"
-description: "HTML-based presentation slide generator using the Fluid Intelligence design system (16:9 immersive layout, glassmorphism, Electric Blue theme). Generates beautiful full-screen HTML slides with keyboard/scroll navigation and optional PPTX export. Supports cover page, table of contents, content pages, and ending page templates. When user has not provided specific slide content, this skill searches the web to gather information, summarizes with AI, and then builds the slides. This skill should be used when the user asks to generate/create/make a PPT, presentation, slides about any topic."
+version: "3.2"
+description: "HTML-based presentation slide generator supporting TWO design themes: (1) Fluid Intelligence — glassmorphism, Electric Blue, immersive 16:9; (2) Tencent Cloud Corporate — clean white, blue accent bar, professional enterprise style. Generates full-screen HTML slides with keyboard/scroll navigation and optional PPTX export. Supports cover page, table of contents, 4 content layouts, and ending page. When user has not provided specific slide content, this skill searches the web to gather information, summarizes with AI, and then builds the slides. This skill should be used when the user asks to generate/create/make a PPT, presentation, slides about any topic."
 agent_created: true
 ---
 
@@ -19,6 +19,23 @@ Trigger this skill when the user says any of:
 - "Create slides for [topic]"
 - "制作 [主题] 幻灯片"
 - Any request involving PPT/presentation/slides/幻灯片/演示文稿 generation
+
+## Design Themes
+
+This skill supports TWO design themes. Choose based on context:
+
+### Theme 1: Fluid Intelligence (default)
+Modern, creative, glassmorphism-heavy. Best for: product launches, tech demos, creative pitches, design-forward presentations.
+
+### Theme 2: Tencent Cloud Corporate (腾讯云企业模板)
+Clean, professional, minimal. Best for: business reports, enterprise sales, investor decks, internal presentations, 腾讯对外正式文档.
+
+**How to choose:**
+- If the user mentions 腾讯/腾讯云/Tencent, 公司/企业/商务, or 正式汇报 → use **Theme 2 (Corporate)**
+- If the user mentions 创意/科技感/炫酷, or no preference → use **Theme 1 (Fluid Intelligence)**
+- Corporate theme is the default for Chinese enterprise/company scenarios
+
+**Theme selection in the workflow:** See Step 4 (Generate HTML) for template file mappings.
 
 ## Design System Overview
 
@@ -45,6 +62,40 @@ The Fluid Intelligence design system defines the visual language:
 
 Full design system details are in `references/design_system.md`. Load it when detailed specs are needed.
 
+### Corporate Theme Design Specs
+From 腾讯云介绍_浅色.pptx company template (1440x811px, 16:9):
+
+| Element | Specification |
+|---------|--------------|
+| **Primary / Accent Bar** | `#006DFF` — 17px left-side vertical bar, full slide height |
+| **Title Accent** | `#1365E2` — decorative first-letter color |
+| **Background** | `#FFFFFF` — solid white, clean and minimal |
+| **Title Text** | `#1a1a2e` — deep dark, near-black |
+| **Body Text** | `#333`~`#555` — readable dark gray |
+| **Subtle Text** | `#888`~`#999` — footer, page numbers, tags |
+| **Title Font** | TTTGB Medium → Noto Sans SC (fallback), bold, 3-6vw |
+| **Body Font** | 微软雅黑 → Noto Sans SC (fallback), 400 weight |
+| **Label Font** | Inter, uppercase, tracking-wider |
+| **Border Radius** | None (sharp corners, corporate style) |
+| **Glass Effects** | None (solid colors only) |
+| **Layout Type** | Minimal: bar + content, no decorative elements |
+
+**Corporate layout structure (every slide):**
+```
+┌──────────────────────────────────────────────┐
+│ ▐   Logo (top-right)                         │
+│ ▌                                            │
+│ ▌  Title (top-left, below logo-level)        │
+│ ▌                                            │
+│ ▌  ┌──────────────────────────────────┐      │
+│ ▌  │  Content Area                    │      │
+│ ▌  │  (flexible: cards, list, grid,   │      │
+│ ▌  │   text, table — max 4 items)     │      │
+│ ▌  └──────────────────────────────────┘      │
+│ ▌                   Page N / Footer          │
+└──────────────────────────────────────────────┘
+```
+
 ## Page Templates
 
 Seven template types are available in `assets/templates/`:
@@ -58,6 +109,25 @@ Seven template types are available in `assets/templates/`:
 | Content (Case Study) | `content-case.html` | Scenario case study: pain points, solution flow, business metrics |
 | Content (Timeline) | `content-timeline.html` | Diagonal timeline with alternating milestone cards |
 | Ending | `ending.html` | Thank-you slide with solid blue background |
+
+### Corporate Theme Templates
+
+Three corporate-style templates based on 腾讯云 company design:
+
+| Template | File | Purpose |
+|----------|------|---------|
+| Cover (Corp) | `cover-corp.html` | Title slide: 17px left blue bar + large title with first-letter accent + subtitle |
+| Content (Corp) | `content-corp.html` | Content slide: blue bar + section title + flexible content area (cards, text, list) |
+| Ending (Corp) | `ending-corp.html` | Thank-you slide: blue bar + centered thank-you text + subtitle |
+
+Corporate templates use these key placeholders:
+- `{{CORP_ACCENT_COLOR}}` — Left bar color (default `#006DFF`)
+- `{{CORP_TITLE}}` — Page title
+- `{{CORP_CONTENT}}` — Main HTML content (for content slides)
+- `{{CORP_BG_COLOR}}` — Background (default `#FFFFFF`)
+- `{{CORP_PAGE_NUM}}` — Page number in bottom-right
+- Cover-specific: `{{CORP_TITLE_ACCENT_CHAR}}`, `{{CORP_TITLE_REST}}`, `{{CORP_SUBTITLE}}`, `{{CORP_TAGLINE}}`
+- Ending-specific: `{{CORP_ENDING_TITLE_ACCENT}}`, `{{CORP_ENDING_TITLE_REST}}`, `{{CORP_ENDING_SUB}}`
 
 Each template uses `{{PLACEHOLDER}}` markers for dynamic content. See each template file for
 specific placeholders and their meanings.
@@ -105,8 +175,9 @@ If the user only gave a topic name without specific content:
 
 ### Step 3: Plan Slide Structure
 
-Create a slide-by-slide plan before writing any code:
+Create a slide-by-slide plan. First, **decide the theme** based on the Design Themes section above.
 
+**For Fluid Intelligence theme:**
 ```
 Slide 1: Cover
   - Title: [title]
@@ -133,11 +204,42 @@ Slide N+1: Ending
   - Main text: [e.g., "感谢倾听" or custom]
 ```
 
+**For Corporate theme (腾讯云企业模板):**
+```
+Slide 1: Cover (cover-corp.html)
+  - CORP_TITLE_ACCENT_CHAR: First character of title (accent color #1365E2, 1.4x size)
+  - CORP_TITLE_REST: Rest of title text
+  - CORP_SUBTITLE: Subtitle below title
+  - CORP_TAGLINE: Bottom-left tagline (e.g., company slogan)
+  - CORP_FOOTER: Bottom-right info (presenter, date)
+  - CORP_LOGO_URL: Company logo img tag (optional)
+
+Slide 2: Table of Contents (use content-corp.html with CORP_CONTENT=list)
+  - CORP_TITLE: "目录"
+  - CORP_CONTENT: Numbered list of sections
+
+Slide 3-N: Content slides (content-corp.html)
+  - CORP_TITLE: Section title
+  - CORP_CONTENT: HTML content — text paragraphs, bullet lists, cards, or simple tables
+  - CORP_PAGE_NUM: Slide number (bottom-right)
+
+Slide N+1: Ending (ending-corp.html)
+  - CORP_ENDING_TITLE_ACCENT: First character of "感谢倾听" (#006DFF)
+  - CORP_ENDING_TITLE_REST: "谢倾听"
+  - CORP_ENDING_SUB: "Q & A" or custom subtitle
+```
+
+Corporate content slides are simpler — no glassmorphism or diagonal layouts. Use:
+- Text paragraphs with clear hierarchy
+- Simple icon+text cards (max 4 per slide)
+- Numbered/bullet lists (max 5 items, 2 lines each)
+- Clean tables (simple borders, no glass container)
+
 ### Step 4: Generate HTML
 
 Create a single self-contained HTML file that includes all slides.
 
-**Assembly rules:**
+**Assembly rules (common to both themes):**
 1. Read `assets/slide-engine.js` for the navigation system CSS and JS.
 2. Read templates from `assets/templates/` as needed.
 3. Combine all slides into one HTML document:
@@ -154,10 +256,7 @@ Create a single self-contained HTML file that includes all slides.
    </head>
    <body>
      <div class="slides-container">
-       <!-- Slide 1: Cover (from assets/templates/cover.html with placeholders replaced) -->
-       <!-- Slide 2: TOC (from assets/templates/toc.html with placeholders replaced) -->
-       <!-- Slide 3-N: Content pages -->
-       <!-- Slide N+1: Ending (from assets/templates/ending.html with placeholders replaced) -->
+       <!-- All slide <section> elements -->
      </div>
      <!-- Navigation indicators -->
      <!-- Slide engine JS (from assets/slide-engine.js, JS section) -->
@@ -168,16 +267,20 @@ Create a single self-contained HTML file that includes all slides.
 4. **Each slide** must be wrapped in a `<section class="slide">` element with 16:9 container.
 5. Replace all `{{PLACEHOLDER}}` markers with actual content.
 6. Apply design system colors and typography consistently across all slides.
-7. **Cover image handling**:
-   - If a cover image was generated (Step 2.3): set `{{COVER_IMAGE_URL}}` = `cover-hero.png`, `{{COVER_IMAGE_ALT}}` = topic description.
-   - If NO cover image was generated: copy `assets/cover-default-hero.jpg` (腾讯滨海大厦) to workspace alongside the HTML as `cover-hero.png`, then set `{{COVER_IMAGE_URL}}` = `cover-hero.png`, `{{COVER_IMAGE_ALT}}` = `"封面装饰图"`.
-   - **The cover page MUST always have an image on the right side — never leave it blank.**
-8. **Content density rules** (CRITICAL — prevents layout overflow):
-   - Each content slide max 4 items (cards, list items, grid cells)
-   - Each list item text max 2 lines (~60 Chinese characters)
-   - Reduce padding from `p-10 lg:p-16` to `p-8 lg:p-12` when content is dense
-   - Always add `overflow-hidden` and `flex-shrink-0` on headers, `min-h-0` on scrollable areas
-   - Numbered list items MUST use `flex items-start` (NOT `items-center`) to handle multiline text
+
+**Fluid Intelligence theme assembly:**
+- Use: `cover.html`, `toc.html`, `content.html` (A/B/C/D), `content-table.html` (E), `content-case.html` (F), `content-timeline.html` (G), `ending.html`
+- Include all glassmorphism CSS, Google Fonts, and Material Symbols
+- Cover image generation applies (see Cover Image Generation section)
+
+**Corporate theme assembly:**
+- Use: `cover-corp.html`, `content-corp.html`, `ending-corp.html`
+- Corporate theme uses ONLY `data-theme="corp"` on slides
+- Simpler CSS: NO glassmorphism, NO Google Fonts required (Noto Sans SC from CDN)
+- NO cover image generation needed (corporate templates use text-only titles)
+- Replace placeholders with actual content per the corporate template comments
+- Corporate content slides: generate clean HTML inside `{{CORP_CONTENT}}` (text, simple cards, lists)
+- Font fallback chain: `'Noto Sans SC', 'Microsoft YaHei', system-ui, sans-serif`
 
 **Critical CSS rules for the container:**
 ```css
@@ -198,19 +301,22 @@ Create a single self-contained HTML file that includes all slides.
 - For "case" layout: use `content-case.html` template
 - For "timeline" layout: use `content-timeline.html` template
 
-**Critical CSS rules for the container:**
-```css
-.slides-container { width: 100vw; height: 100vh; overflow: hidden; position: relative; }
-.slide { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-         transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
-.slide.active { transform: translateY(0); }
-.slide.above { transform: translateY(-100vh); }
-.slide.below { transform: translateY(100vh); }
-```
+**Content density rules** (CRITICAL — prevents layout overflow):
+  - Each content slide max 4 items (cards, list items, grid cells)
+  - Each list item text max 2 lines (~60 Chinese characters)
+  - Reduce padding from `p-10 lg:p-16` to `p-8 lg:p-12` when content is dense
+  - Always add `overflow-hidden` and `flex-shrink-0` on headers, `min-h-0` on scrollable areas
+  - Numbered list items MUST use `flex items-start` (NOT `items-center`) to handle multiline text
+  - Corporate theme: padding is managed by `px-[6%]` and `pt-[9%]` — do NOT add extra padding
 
 **Required fonts** (include in `<head>` when using any content template):
 ```html
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500&family=Geist:wght@400;500;600&family=Noto+Sans+SC:wght@300;400;500;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+```
+
+**For Corporate theme, use a lighter font set** (no Google Fonts required for basic slides):
+```html
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 ```
 
 When using **Layout E (Table)**, also include:
@@ -433,17 +539,31 @@ Choose the right content layout based on the information type:
 
 Before delivering, verify:
 - [ ] All slides have 16:9 aspect ratio containers
-- [ ] Colors match the design system (Electric Blue primary)
-- [ ] Glassmorphism effects applied correctly (backdrop-filter, semi-transparent borders)
 - [ ] Navigation works: keyboard arrows, scroll, nav dots
 - [ ] No horizontal scrollbar or overflow
 - [ ] Text is readable with proper contrast
 - [ ] All `{{PLACEHOLDER}}` markers replaced with actual content
-- [ ] Cover has diagonal blue overlay; right-side has image (AI-generated or default 腾讯滨海大厦)
-- [ ] No content overflow (each slide has `overflow:hidden`, max 4 items per slide)
-- [ ] Numbered list items use `flex items-start` (NOT `items-center`) for multiline text
-- [ ] Ending has solid blue background
 - [ ] TOC items have corresponding content slides
+
+**Fluid Intelligence theme checks:**
+- [ ] Colors match the design system (Electric Blue primary)
+- [ ] Glassmorphism effects applied correctly (backdrop-filter, semi-transparent borders)
+- [ ] Cover has diagonal blue overlay; right-side has image (AI-generated or default 腾讯滨海大厦)
+- [ ] Ending has solid blue background
 - [ ] For Layout E (Table): required CSS (.bg-mesh, .parallelogram, .glass-container) is included
 - [ ] For Layout F (Case Study): .section-accent-* CSS, Material Symbols font loaded
 - [ ] For Layout G (Timeline): .canvas-16-9, .timeline-* CSS all present; milestones alternate up/down
+
+**Corporate theme checks:**
+- [ ] Left blue bar: 17px, `#006DFF`, full height on every slide
+- [ ] Background is solid white (`#FFFFFF`) on all slides
+- [ ] NO glassmorphism, NO backdrop-filter, NO diagonal overlays
+- [ ] Title first character uses accent color (`#1365E2`) at 1.4x size
+- [ ] Cover uses `cover-corp.html` template with text-only title
+- [ ] Content slides use `content-corp.html` with clean `{{CORP_CONTENT}}` HTML
+- [ ] Page numbers shown in bottom-right on content slides
+- [ ] Ending uses `ending-corp.html` with centered thank-you text
+
+**Both themes:**
+- [ ] No content overflow (each slide has `overflow:hidden`, max 4 items per slide)
+- [ ] Numbered list items use `flex items-start` (NOT `items-center`) for multiline text

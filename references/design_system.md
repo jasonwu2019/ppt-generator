@@ -196,6 +196,8 @@ tailwind.config = {
 
 ## Ending Slide Specifics
 
+### Fluid Intelligence Ending
+
 - **Background**: Solid `#005eff` (slightly brighter than primary)
 - **Main text**: 11vw, white, bold italic, Noto Sans SC
 - **Decorative squares**: White at 10% and 30% opacity, positioned absolutely
@@ -305,4 +307,156 @@ Material Symbols Outlined usage:
 ```css
 .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
 .fill-icon { font-variation-settings: 'FILL' 1; }
+```
+
+---
+
+# Tencent Cloud Corporate Design System
+
+Extracted from 腾讯云介绍_浅色.pptx company template (1440×811px, 16:9).
+
+## Design Philosophy
+
+Clean, professional, minimal. No glassmorphism, no decorative overlays, no background images. 
+The design communicates authority and trust through simplicity — a single blue accent bar + solid white space.
+
+## Colors
+
+### Corporate Palette
+
+| Token | Hex | Usage |
+|-------|-----|-------|
+| `corp-accent` | `#006DFF` | Left vertical accent bar (17px, full height) |
+| `corp-title-accent` | `#1365E2` | Decorative first-letter color in titles |
+| `corp-bg` | `#FFFFFF` | Background (solid white) |
+| `corp-title` | `#1A1A2E` | Title text (deep dark, near-black) |
+| `corp-body` | `#333333` ~ `#555555` | Body text |
+| `corp-subtle` | `#888888` ~ `#999999` | Footer, page numbers, secondary text |
+| `corp-dk1` | `#000000` | System windowText |
+| `corp-lt1` | `#FFFFFF` | System window |
+| `corp-dk2` | `#1F497D` | Dark 2 theme color |
+| `corp-lt2` | `#EEECE1` | Light 2 theme color |
+
+### Accent Colors (theme XML)
+| Name | Hex | Usage |
+|------|-----|-------|
+| `accent1` | `#4F81BD` | Theme accent 1 |
+| `accent2` | `#C0504D` | Theme accent 2 |
+| `accent3` | `#9BBB59` | Theme accent 3 |
+| `accent4` | `#8064A2` | Theme accent 4 |
+| `accent5` | `#4BACC6` | Theme accent 5 |
+| `accent6` | `#F79646` | Theme accent 6 |
+
+## Typography
+
+| Token | Font | Size | Weight | Usage |
+|-------|------|------|--------|-------|
+| `corp-display` | TTTGB Medium → Noto Sans SC | 5-6vw (clamp: 40-80px) | 700 | Main title on cover |
+| `corp-display-accent` | Same | 1.4× display size | 700 | First character (accent color) |
+| `corp-headline` | Noto Sans SC | 2.5-3vw (clamp: 24-40px) | 700 | Section titles |
+| `corp-subtitle` | Noto Sans SC / 微软雅黑 | 1.5-2.5vw (clamp: 18-36px) | 400 | Subtitles |
+| `corp-body` | Noto Sans SC / 微软雅黑 | 1.2-1.8vw (clamp: 16-24px) | 400 | Body text |
+| `corp-caption` | Inter | 0.8-1vw (clamp: 11-14px) | 400 | Page numbers, footer |
+| `corp-label` | Inter | 0.9-1.2vw (clamp: 10-16px) | 400 | Tags, section labels |
+
+**Font fallback chain**: `'Noto Sans SC', 'Microsoft YaHei', system-ui, sans-serif`
+
+## Layout & Spacing
+
+### Slide Frame
+```
+┌──────────────────────────────────────────────────────────┐
+│▐ 17px                                                    │
+│▌ #006DFF                                                 │
+│▌                                                          │
+│▌    Content area (flex-1, px-[6%])                       │
+│▌    Title at ~9% from top                                │
+│▌    Body starts ~3% below title                          │
+│▌    Footer at ~3% from bottom                            │
+│▌                                                          │
+│▌                         Page N ── bottom-right, ~3%      │
+└──────────────────────────────────────────────────────────┘
+```
+
+### Positioning Reference (from PPTX template)
+| Element | Left | Top | Width | Height | Notes |
+|---------|------|-----|-------|--------|-------|
+| Accent Bar | 0 | 44px | 17px | full | `#006DFF` |
+| Logo | 1120px | 53px | 265px | 25px | Top-right |
+| Title | 49px | 37px | ~1089px | 68px | Top-left area |
+| Content | ~55px | ~120px+ | var | var | Below title |
+
+### Spacing Rules
+- No glassmorphism — solid backgrounds only
+- No border-radius (sharp corners)
+- No drop-shadows on content
+- Minimal padding: percentage-based (4-8%) for responsive scaling
+- Content max-width: none (fills the available space)
+
+## Corporate Cover Slide
+
+- **Background**: Solid white (`#FFFFFF`)
+- **Accent bar**: Left side, 17px, `#006DFF`, full height
+- **Title**: Centered in the remaining space
+  - First character: accent color `#1365E2`, 1.4× larger
+  - Rest: `#1A1A2E`, bold, 5-6vw
+- **Subtitle**: Below title, `#555`, 2.5vw
+- **Tagline**: Bottom-left, `#999`, small caps, uppercase
+- **Footer**: Bottom-right, presenter/date info
+- **No images**, no decorative elements
+
+## Corporate Content Slide
+
+- **Background**: Solid white
+- **Title area**: Bold, 24-40px, positioned ~9% from top
+- **Content area**: Flexible — supports:
+  - Text paragraphs (16-24px, `#333`)
+  - Simple cards (2-4 columns, thin border or background tint)
+  - Numbered/bullet lists (clean, minimal markers)
+  - Tables (simple borders, no glass container)
+- **Page number**: Bottom-right, `#999`, small
+
+## Corporate Ending Slide
+
+- **Background**: Solid white
+- **Centered text**: Large "感谢倾听" with accent first character
+- **Subtitle**: "Q & A" or custom, below the main text
+- **Footer**: Contact/date info centered at bottom
+
+## Corporate CSS Baseline
+
+```css
+/* Corporate theme — NO glassmorphism, NO gradients, NO decorative shadows */
+.corp-slide {
+  background: #FFFFFF;
+  font-family: 'Noto Sans SC', 'Microsoft YaHei', system-ui, sans-serif;
+}
+.corp-accent-bar {
+  width: 17px;
+  height: 100%;
+  background: #006DFF;
+  flex-shrink: 0;
+}
+.corp-title {
+  color: #1A1A2E;
+  font-weight: 700;
+}
+.corp-title-accent {
+  color: #1365E2;
+  font-size: 1.4em;
+  display: inline-block;
+  line-height: 0.8;
+  vertical-align: middle;
+}
+.corp-body {
+  color: #333;
+  line-height: 1.6;
+}
+.corp-card {
+  background: #F8F9FC;
+  border: 1px solid #E8ECF2;
+  border-left: 3px solid #006DFF;
+  padding: 5%;
+  border-radius: 0;
+}
 ```

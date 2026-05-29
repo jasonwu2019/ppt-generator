@@ -1,0 +1,84 @@
+<!--
+  CONTENT SLIDE — Tencent Cloud Corporate Template (light/浅色)
+  ===============================================================
+  Design extracted from 腾讯云介绍_浅色.pptx company template.
+
+  Layout structure:
+  ┌──────────────────────────────────────────────────────────┐
+  │ [blue bar] ┌ Logo (top-right)   ┌ Section Tag (optional) │
+  │ 17px       │                     │                        │
+  │ #006DFF    │  [Title — section title, bold, large]      │
+  │ full-h     │                                              │
+  │            │  ┌──────────────────────────────────────┐    │
+  │            │  │   Content Area (flexible)             │    │
+  │            │  │   - Text paragraphs                   │    │
+  │            │  │   - Cards (2-4 columns)               │    │
+  │            │  │   - Numbered/bullet lists             │    │
+  │            │  │   - Tables / charts placeholder       │    │
+  │            │  │   - Icons + descriptions              │    │
+  │            │  └──────────────────────────────────────┘    │
+  │            │               [Page Number / Footer]         │
+  └──────────────────────────────────────────────────────────┘
+
+  Placeholders:
+  {{CORP_SECTION_TAG}}   — Optional section label (e.g., "01", "产品介绍")
+  {{CORP_TITLE}}          — Page title
+  {{CORP_CONTENT}}        — Main content HTML area
+  {{CORP_LOGO_URL}}       — Logo image URL (top-left, usually empty for content pages)
+  {{CORP_PAGE_NUM}}       — Page number (bottom-right)
+  {{CORP_ACCENT_COLOR}}   — Left bar color (default: #006DFF)
+  {{CORP_BG_COLOR}}       — Background color (default: #FFFFFF)
+
+  Design Rules (from company template):
+  - Same 17px left blue bar as cover
+  - Title area: top ~4-8% from top, 32-40px font size, bold
+  - Content area: below title, flexible layout
+  - Clean white background, no glassmorphism
+  - Font: Noto Sans SC / Microsoft YaHei
+  - Text color: #222-#333 for body, #1a1a2e for titles
+-->
+
+<section class="slide" data-theme="corp">
+  <div class="w-full h-screen flex bg-white overflow-hidden relative" style="background: {{CORP_BG_COLOR}};">
+    
+    <!-- Left accent bar -->
+    <div class="flex-shrink-0 h-full" style="width: 17px; background: {{CORP_ACCENT_COLOR}};"></div>
+    
+    <!-- Main content area -->
+    <div class="flex-1 flex flex-col overflow-hidden relative">
+      
+      <!-- Top: Logo (right) + Section tag (left, optional) -->
+      <div class="absolute top-[3%] left-[4%] right-[4%] flex items-center justify-between z-10">
+        <div class="flex items-center gap-2">
+          {{CORP_LOGO_URL}}
+        </div>
+        <span class="text-xs tracking-widest uppercase opacity-50"
+              style="font-family: 'Inter', system-ui; font-size: clamp(10px, 0.9vw, 13px); color: #999">
+          {{CORP_SECTION_TAG}}
+        </span>
+      </div>
+      
+      <!-- Title -->
+      <div class="px-[6%] pt-[9%] pb-[3%] flex-shrink-0">
+        <h2 class="font-bold leading-tight"
+            style="font-size: clamp(24px, 3vw, 40px); font-family: 'Noto Sans SC', 'TTTGB Medium', system-ui; color: #1a1a2e;">
+          {{CORP_TITLE}}
+        </h2>
+      </div>
+      
+      <!-- Content Body -->
+      <div class="flex-1 px-[6%] pb-[4%] min-h-0 overflow-y-auto">
+        {{CORP_CONTENT}}
+      </div>
+      
+      <!-- Bottom: Page number -->
+      <div class="absolute bottom-[3%] right-[4%]">
+        <span class="text-xs opacity-40"
+              style="font-family: 'Inter', system-ui; font-size: clamp(10px, 0.8vw, 12px); color: #999">
+          {{CORP_PAGE_NUM}}
+        </span>
+      </div>
+      
+    </div>
+  </div>
+</section>

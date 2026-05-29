@@ -1,18 +1,19 @@
 # PPT Generator
 
-基于 **Fluid Intelligence** 设计系统的 HTML 演示文稿生成器。全屏 16:9 沉浸式布局，玻璃拟态风格，Electric Blue 主题配色。
+基于双设计系统的 HTML 演示文稿生成器：**Fluid Intelligence**（玻璃拟态/科技感）与 **腾讯云企业模板**（简洁专业/商务风）。
 
-> 🎯 为 WorkBuddy 定制的 ppt-generator Skill | 版本 v3.1
+> 🎯 为 WorkBuddy 定制的 ppt-generator Skill | 版本 v3.2
 
 ## ✨ 特性
 
-- **7 种页面模板**：封面、目录、内容页（4 种布局）、结束页
+- **双设计主题**：Fluid Intelligence（创意科技感）+ 腾讯云企业模板（专业商务风）
+- **10 种页面模板**：Fluid 7 种 + Corporate 3 种，覆盖所有场景
 - **全屏 16:9**：基于 vh/vw 响应式布局，完美适配各类屏幕
 - **键盘翻页**：方向键 / 空格键 / 滚轮导航，流畅切换
 - **AI 内容生成**：无内容时自动 WebSearch + AI 总结生成幻灯片
 - **封面图自动兜底**：AI 生图失败时使用默认装饰图，绝不空白
 - **PPTX 导出**：通过 Python 脚本一键导出为 PowerPoint 文件
-- **Glassmorphism 设计**：毛玻璃卡片 + 渐变叠加 + 微阴影层次
+- **Glassmorphism 设计**（Fluid 主题）：毛玻璃卡片 + 渐变叠加 + 微阴影层次
 
 ## 🎨 设计系统
 
@@ -40,6 +41,39 @@
 | **内容页 D** | `content-timeline.html` | 对角时间轴 + 交替里程碑卡片 |
 | **结束页** | `ending.html` | 纯蓝背景感谢页 |
 
+### 腾讯云企业模板 (Corporate)
+
+| 要素 | 规格 |
+|------|------|
+| **主色** | 装饰条 `#006DFF` / 首字强调 `#1365E2` |
+| **背景** | 纯白 `#FFFFFF` |
+| **标题字体** | Noto Sans SC / TTTGB Medium，bold |
+| **正文字体** | Noto Sans SC / 微软雅黑 |
+| **字号** | 标题 24-40px，正文 16-24px |
+| **布局特征** | 左侧 17px 蓝色装饰条 + 内容区，无玻璃拟态 |
+
+## 📄 页面模板
+
+### Fluid Intelligence 主题（7 种）
+
+| 模板 | 文件 | 用途 |
+|------|------|------|
+| **封面** | `cover.html` | 蓝色斜切面叠加 + 背景图 + 右侧 Hero 图 |
+| **目录** | `toc.html` | 左侧玻璃面板 + 右侧编号列表 |
+| **内容页 A** | `content.html` | 3 卡片网格 / 编号列表 / 2×2 图标网格 |
+| **内容页 B** | `content-table.html` | 数据表格，蓝色表头 + 悬停高亮行 |
+| **内容页 C** | `content-case.html` | 场景案例：痛点 → 方案流程 → 业务指标 |
+| **内容页 D** | `content-timeline.html` | 对角时间轴 + 交替里程碑卡片 |
+| **结束页** | `ending.html` | 纯蓝背景感谢页 |
+
+### 腾讯云企业模板（3 种）
+
+| 模板 | 文件 | 用途 |
+|------|------|------|
+| **封面** | `cover-corp.html` | 白底 + 左蓝条 + 首字放大标题 |
+| **内容页** | `content-corp.html` | 蓝条 + 标题 + 灵活内容区（文本/卡片/列表） |
+| **结束页** | `ending-corp.html` | 白底 + 居中感谢文字 |
+
 ## 📁 项目结构
 
 ```
@@ -47,20 +81,23 @@ ppt-generator/
 ├── SKILL.md                       # Skill 定义与工作流程
 ├── README.md                      # 本文件
 ├── assets/
-│   ├── templates/                 # 7 个 HTML 模板
-│   │   ├── cover.html
-│   │   ├── toc.html
-│   │   ├── content.html
-│   │   ├── content-table.html
-│   │   ├── content-case.html
-│   │   ├── content-timeline.html
-│   │   └── ending.html
+│   ├── templates/                 # 10 个 HTML 模板
+│   │   ├── cover.html             # Fluid 封面
+│   │   ├── toc.html               # Fluid 目录
+│   │   ├── content.html           # Fluid 内容（A/B/C/D）
+│   │   ├── content-table.html     # Fluid 表格（E）
+│   │   ├── content-case.html      # Fluid 案例（F）
+│   │   ├── content-timeline.html  # Fluid 时间轴（G）
+│   │   ├── ending.html            # Fluid 结束页
+│   │   ├── cover-corp.html        # 企业模板封面
+│   │   ├── content-corp.html      # 企业模板内容
+│   │   └── ending-corp.html       # 企业模板结束页
 │   ├── slide-engine.js            # 翻页导航引擎
 │   └── cover-default-hero.jpg     # 默认封面装饰图（腾讯滨海大厦）
 ├── scripts/
 │   └── export_pptx.py             # PPTX 导出脚本
 └── references/
-    └── design_system.md           # 完整设计规范
+    └── design_system.md           # 完整设计规范（含企业模板）
 ```
 
 ## 🚀 使用方式
@@ -92,6 +129,7 @@ python scripts/export_pptx.py your-presentation.html
 
 | 版本 | 日期 | 更新内容 |
 |------|------|----------|
+| v3.2 | 2026-05-29 | 新增腾讯云企业模板主题（3 个模板：cover-corp/content-corp/ending-corp）；双主题设计系统；自动主题选择逻辑 |
 | v3.1 | 2026-05-29 | 默认封面图兜底（腾讯滨海大厦）；SKILL.md 新增 version 字段 |
 | v3.0 | 2026-05-29 | 修复封面缺图问题；修复内容页溢出（overflow-hidden / min-h-0 / flex-shrink-0）；新增内容密度约束规则 |
 | v2.0 | 2026-05-29 | 新增 3 个内容模板（表格 / 案例 / 时间轴），总计 7 个模板 |
